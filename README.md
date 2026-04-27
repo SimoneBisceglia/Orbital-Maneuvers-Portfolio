@@ -11,7 +11,7 @@ Developed GMAT and MATLAB simulations for advanced flight dynamics missions, foc
 
 ### 2. Out-of-Plane Maneuvers & Perturbations
 * **Inclination Changes (1-Impulse vs. 3-Impulse):** Evaluated plane change strategies, proving the energy efficiency of shifting the node to the apogee (3-Impulse) compared to a Single-Impulse burn.
-* **General vs. Restricted Optimization:** Demonstrated that the General 3-Impulse method yields the absolute global minimum $\Delta V$ by optimizing thrust angles (alpha_1, alpha_2$) across all maneuver nodes.
+* **General vs. Restricted Optimization:** Demonstrated that the General 3-Impulse method yields the absolute global minimum $\Delta V$ by optimizing thrust angles (alpha_1, alpha_2) across all maneuver nodes.
 * **J2 Perturbation:** Modeled the Earth's oblateness (J2 effect) causing RAAN (Right Ascension of the Ascending Node) regression.
 * **Target Compensation:** Implemented time-of-flight drift compensation to ensure precise target orbit insertion despite nodal drift.
 
