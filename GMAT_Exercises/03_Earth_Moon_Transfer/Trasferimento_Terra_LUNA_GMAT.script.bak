@@ -1,0 +1,271 @@
+%General Mission Analysis Tool(GMAT) Script
+%Created: 2026-04-25 15:10:54
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft DefaultSC;
+GMAT DefaultSC.DateFormat = UTCGregorian;
+GMAT DefaultSC.Epoch = '01 Jan 2000 11:59:28.000';
+GMAT DefaultSC.CoordinateSystem = EarthMJ2000Eq;
+GMAT DefaultSC.DisplayStateType = Keplerian;
+GMAT DefaultSC.SMA = 6678.14;
+GMAT DefaultSC.ECC = 0;
+GMAT DefaultSC.INC = 28.5;
+GMAT DefaultSC.RAAN = 0;
+GMAT DefaultSC.AOP = 0;
+GMAT DefaultSC.TA = 0;
+GMAT DefaultSC.DryMass = 850;
+GMAT DefaultSC.Cd = 2.2;
+GMAT DefaultSC.Cr = 1.8;
+GMAT DefaultSC.DragArea = 15;
+GMAT DefaultSC.SRPArea = 1;
+GMAT DefaultSC.SPADDragScaleFactor = 1;
+GMAT DefaultSC.SPADSRPScaleFactor = 1;
+GMAT DefaultSC.AtmosDensityScaleFactor = 1;
+GMAT DefaultSC.ExtendedMassPropertiesModel = 'None';
+GMAT DefaultSC.NAIFId = -10000001;
+GMAT DefaultSC.NAIFIdReferenceFrame = -9000001;
+GMAT DefaultSC.OrbitColor = Red;
+GMAT DefaultSC.TargetColor = Teal;
+GMAT DefaultSC.OrbitErrorCovariance = [ 1e+70 0 0 0 0 0 ; 0 1e+70 0 0 0 0 ; 0 0 1e+70 0 0 0 ; 0 0 0 1e+70 0 0 ; 0 0 0 0 1e+70 0 ; 0 0 0 0 0 1e+70 ];
+GMAT DefaultSC.CdSigma = 1e+70;
+GMAT DefaultSC.CrSigma = 1e+70;
+GMAT DefaultSC.Id = 'SatId';
+GMAT DefaultSC.Attitude = CoordinateSystemFixed;
+GMAT DefaultSC.SPADSRPInterpolationMethod = Bilinear;
+GMAT DefaultSC.SPADSRPScaleFactorSigma = 1e+70;
+GMAT DefaultSC.SPADDragInterpolationMethod = Bilinear;
+GMAT DefaultSC.SPADDragScaleFactorSigma = 1e+70;
+GMAT DefaultSC.AtmosDensityScaleFactorSigma = 1e+70;
+GMAT DefaultSC.ModelFile = 'aura.3ds';
+GMAT DefaultSC.ModelOffsetX = 0;
+GMAT DefaultSC.ModelOffsetY = 0;
+GMAT DefaultSC.ModelOffsetZ = 0;
+GMAT DefaultSC.ModelRotationX = 0;
+GMAT DefaultSC.ModelRotationY = 0;
+GMAT DefaultSC.ModelRotationZ = 0;
+GMAT DefaultSC.ModelScale = 1;
+GMAT DefaultSC.AttitudeDisplayStateType = 'Quaternion';
+GMAT DefaultSC.AttitudeRateDisplayStateType = 'AngularVelocity';
+GMAT DefaultSC.AttitudeCoordinateSystem = EarthMJ2000Eq;
+GMAT DefaultSC.EulerAngleSequence = '321';
+
+
+
+
+%----------------------------------------
+%---------- ForceModels
+%----------------------------------------
+
+Create ForceModel DefaultProp_ForceModel;
+GMAT DefaultProp_ForceModel.CentralBody = Earth;
+GMAT DefaultProp_ForceModel.PrimaryBodies = {Earth};
+GMAT DefaultProp_ForceModel.PointMasses = {Luna, Sun};
+GMAT DefaultProp_ForceModel.Drag = None;
+GMAT DefaultProp_ForceModel.SRP = Off;
+GMAT DefaultProp_ForceModel.RelativisticCorrection = Off;
+GMAT DefaultProp_ForceModel.ErrorControl = RSSStep;
+GMAT DefaultProp_ForceModel.GravityField.Earth.Degree = 4;
+GMAT DefaultProp_ForceModel.GravityField.Earth.Order = 4;
+GMAT DefaultProp_ForceModel.GravityField.Earth.StmLimit = 100;
+GMAT DefaultProp_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
+GMAT DefaultProp_ForceModel.GravityField.Earth.TideModel = 'None';
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator DefaultProp;
+GMAT DefaultProp.FM = DefaultProp_ForceModel;
+GMAT DefaultProp.Type = RungeKutta89;
+GMAT DefaultProp.InitialStepSize = 60;
+GMAT DefaultProp.Accuracy = 9.999999999999999e-12;
+GMAT DefaultProp.MinStep = 0.001;
+GMAT DefaultProp.MaxStep = 2700;
+GMAT DefaultProp.MaxStepAttempts = 50;
+GMAT DefaultProp.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Burns
+%----------------------------------------
+
+Create ImpulsiveBurn ImpulsiveBurn1;
+GMAT ImpulsiveBurn1.CoordinateSystem = Local;
+GMAT ImpulsiveBurn1.Origin = Earth;
+GMAT ImpulsiveBurn1.Axes = VNB;
+GMAT ImpulsiveBurn1.Element1 = 3.1082;
+GMAT ImpulsiveBurn1.Element2 = 0;
+GMAT ImpulsiveBurn1.Element3 = 0;
+GMAT ImpulsiveBurn1.DecrementMass = false;
+GMAT ImpulsiveBurn1.Isp = 300;
+GMAT ImpulsiveBurn1.GravitationalAccel = 9.81;
+
+Create ImpulsiveBurn ImpulsiveBurn2;
+GMAT ImpulsiveBurn2.CoordinateSystem = Local;
+GMAT ImpulsiveBurn2.Origin = Luna;
+GMAT ImpulsiveBurn2.Axes = VNB;
+GMAT ImpulsiveBurn2.Element1 = -0.8213;
+GMAT ImpulsiveBurn2.Element2 = 0;
+GMAT ImpulsiveBurn2.Element3 = 0;
+GMAT ImpulsiveBurn2.DecrementMass = false;
+GMAT ImpulsiveBurn2.Isp = 300;
+GMAT ImpulsiveBurn2.GravitationalAccel = 9.81;
+
+%----------------------------------------
+%---------- Coordinate Systems
+%----------------------------------------
+
+Create CoordinateSystem LunaMJ2000Eq;
+GMAT LunaMJ2000Eq.Origin = Luna;
+GMAT LunaMJ2000Eq.Axes = MJ2000Eq;
+
+%----------------------------------------
+%---------- Solvers
+%----------------------------------------
+
+Create DifferentialCorrector DefaultDC;
+GMAT DefaultDC.ShowProgress = true;
+GMAT DefaultDC.ReportStyle = Normal;
+GMAT DefaultDC.ReportFile = 'DifferentialCorrectorDefaultDC.data';
+GMAT DefaultDC.MaximumIterations = 25;
+GMAT DefaultDC.DerivativeMethod = ForwardDifference;
+GMAT DefaultDC.Algorithm = NewtonRaphson;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OrbitView DefaultOrbitView;
+GMAT DefaultOrbitView.SolverIterations = Current;
+GMAT DefaultOrbitView.UpperLeft = [ 0.002173913043478261 0 ];
+GMAT DefaultOrbitView.Size = [ 0.5 0.45 ];
+GMAT DefaultOrbitView.RelativeZOrder = 55;
+GMAT DefaultOrbitView.Maximized = false;
+GMAT DefaultOrbitView.Add = {DefaultSC, Earth, Luna};
+GMAT DefaultOrbitView.CoordinateSystem = EarthMJ2000Eq;
+GMAT DefaultOrbitView.DrawObject = [ true true true ];
+GMAT DefaultOrbitView.DataCollectFrequency = 1;
+GMAT DefaultOrbitView.UpdatePlotFrequency = 50;
+GMAT DefaultOrbitView.NumPointsToRedraw = 0;
+GMAT DefaultOrbitView.ShowPlot = true;
+GMAT DefaultOrbitView.MaxPlotPoints = 20000;
+GMAT DefaultOrbitView.ShowLabels = true;
+GMAT DefaultOrbitView.ViewPointReference = Earth;
+GMAT DefaultOrbitView.ViewPointVector = [ 0 -500000 200000 ];
+GMAT DefaultOrbitView.ViewDirection = Earth;
+GMAT DefaultOrbitView.ViewScaleFactor = 1;
+GMAT DefaultOrbitView.ViewUpCoordinateSystem = EarthMJ2000Eq;
+GMAT DefaultOrbitView.ViewUpAxis = Z;
+GMAT DefaultOrbitView.EclipticPlane = Off;
+GMAT DefaultOrbitView.XYPlane = On;
+GMAT DefaultOrbitView.WireFrame = Off;
+GMAT DefaultOrbitView.Axes = On;
+GMAT DefaultOrbitView.Grid = Off;
+GMAT DefaultOrbitView.SunLine = Off;
+GMAT DefaultOrbitView.UseInitialView = On;
+GMAT DefaultOrbitView.StarCount = 7000;
+GMAT DefaultOrbitView.EnableStars = On;
+GMAT DefaultOrbitView.EnableConstellations = On;
+
+Create GroundTrackPlot DefaultGroundTrackPlot;
+GMAT DefaultGroundTrackPlot.SolverIterations = Current;
+GMAT DefaultGroundTrackPlot.UpperLeft = [ 0.07101449275362319 0.306060606060606 ];
+GMAT DefaultGroundTrackPlot.Size = [ 0.5 0.1515151515151515 ];
+GMAT DefaultGroundTrackPlot.RelativeZOrder = 51;
+GMAT DefaultGroundTrackPlot.Maximized = false;
+GMAT DefaultGroundTrackPlot.Add = {DefaultSC};
+GMAT DefaultGroundTrackPlot.DataCollectFrequency = 1;
+GMAT DefaultGroundTrackPlot.UpdatePlotFrequency = 50;
+GMAT DefaultGroundTrackPlot.NumPointsToRedraw = 0;
+GMAT DefaultGroundTrackPlot.ShowPlot = true;
+GMAT DefaultGroundTrackPlot.MaxPlotPoints = 20000;
+GMAT DefaultGroundTrackPlot.CentralBody = Earth;
+GMAT DefaultGroundTrackPlot.TextureMap = 'ModifiedBlueMarble.jpg';
+
+Create OrbitView VistaTrasferimento;
+GMAT VistaTrasferimento.SolverIterations = Current;
+GMAT VistaTrasferimento.UpperLeft = [ 0.002898550724637681 0 ];
+GMAT VistaTrasferimento.Size = [ 0.5 0.45 ];
+GMAT VistaTrasferimento.RelativeZOrder = 47;
+GMAT VistaTrasferimento.Maximized = false;
+GMAT VistaTrasferimento.Add = {DefaultSC, Earth, Luna};
+GMAT VistaTrasferimento.CoordinateSystem = EarthMJ2000Eq;
+GMAT VistaTrasferimento.DrawObject = [ true true true ];
+GMAT VistaTrasferimento.DataCollectFrequency = 1;
+GMAT VistaTrasferimento.UpdatePlotFrequency = 50;
+GMAT VistaTrasferimento.NumPointsToRedraw = 0;
+GMAT VistaTrasferimento.ShowPlot = true;
+GMAT VistaTrasferimento.MaxPlotPoints = 20000;
+GMAT VistaTrasferimento.ShowLabels = true;
+GMAT VistaTrasferimento.ViewPointReference = Earth;
+GMAT VistaTrasferimento.ViewPointVector = [ 400000 -400000 200000 ];
+GMAT VistaTrasferimento.ViewDirection = Earth;
+GMAT VistaTrasferimento.ViewScaleFactor = 1;
+GMAT VistaTrasferimento.ViewUpCoordinateSystem = EarthMJ2000Eq;
+GMAT VistaTrasferimento.ViewUpAxis = Z;
+GMAT VistaTrasferimento.EclipticPlane = Off;
+GMAT VistaTrasferimento.XYPlane = On;
+GMAT VistaTrasferimento.WireFrame = Off;
+GMAT VistaTrasferimento.Axes = On;
+GMAT VistaTrasferimento.Grid = Off;
+GMAT VistaTrasferimento.SunLine = Off;
+GMAT VistaTrasferimento.UseInitialView = On;
+GMAT VistaTrasferimento.StarCount = 7000;
+GMAT VistaTrasferimento.EnableStars = On;
+GMAT VistaTrasferimento.EnableConstellations = On;
+
+Create OrbitView VistaLuna;
+GMAT VistaLuna.SolverIterations = Current;
+GMAT VistaLuna.UpperLeft = [ 0.002898550724637681 0.4545454545454545 ];
+GMAT VistaLuna.Size = [ 0.5 0.45 ];
+GMAT VistaLuna.RelativeZOrder = 59;
+GMAT VistaLuna.Maximized = false;
+GMAT VistaLuna.Add = {DefaultSC, Earth, Luna};
+GMAT VistaLuna.CoordinateSystem = LunaMJ2000Eq;
+GMAT VistaLuna.DrawObject = [ true true true ];
+GMAT VistaLuna.DataCollectFrequency = 1;
+GMAT VistaLuna.UpdatePlotFrequency = 50;
+GMAT VistaLuna.NumPointsToRedraw = 0;
+GMAT VistaLuna.ShowPlot = true;
+GMAT VistaLuna.MaxPlotPoints = 20000;
+GMAT VistaLuna.ShowLabels = true;
+GMAT VistaLuna.ViewPointReference = Luna;
+GMAT VistaLuna.ViewPointVector = [ 40000 40000 20000 ];
+GMAT VistaLuna.ViewDirection = Luna;
+GMAT VistaLuna.ViewScaleFactor = 1;
+GMAT VistaLuna.ViewUpCoordinateSystem = LunaMJ2000Eq;
+GMAT VistaLuna.ViewUpAxis = Z;
+GMAT VistaLuna.EclipticPlane = Off;
+GMAT VistaLuna.XYPlane = On;
+GMAT VistaLuna.WireFrame = Off;
+GMAT VistaLuna.Axes = On;
+GMAT VistaLuna.Grid = Off;
+GMAT VistaLuna.SunLine = Off;
+GMAT VistaLuna.UseInitialView = On;
+GMAT VistaLuna.StarCount = 7000;
+GMAT VistaLuna.EnableStars = On;
+GMAT VistaLuna.EnableConstellations = On;
+
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+
+BeginMissionSequence;
+Propagate DefaultProp(DefaultSC) {DefaultSC.ElapsedSecs = 3600.0, OrbitColor = [255 0 0]};
+Target 'Trova_TLI' DefaultDC {SolveMode = Solve, ExitMode = DiscardAndContinue, ShowProgressWindow = true};
+   Vary DefaultDC(ImpulsiveBurn1.Element1 = 3.1082, {Perturbation = 0.0001, Lower = 0.0, Upper = 4, MaxStep = 0.2, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+   Vary 'Vary2' DefaultDC(DefaultSC.TA = 280, {Perturbation = 0.5, Lower = 0.0, Upper = 360, MaxStep = 12, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+   Maneuver ImpulsiveBurn1(DefaultSC);
+   Propagate DefaultProp(DefaultSC) {DefaultSC.Luna.Periapsis, OrbitColor = [255 255 0]};
+   Achieve 'AchieveRMAG' DefaultDC(DefaultSC.Luna.RMAG = 20000, {Tolerance = 0.1});
+EndTarget;  % For targeter DefaultDC
+Target 'Circolarizzazione_Luna' DefaultDC {SolveMode = Solve, ExitMode = DiscardAndContinue, ShowProgressWindow = true};
+   Vary 'Vary3' DefaultDC(ImpulsiveBurn2.Element1 = -0.8213, {Perturbation = 0.0001, Lower = -2.0, Upper = 0, MaxStep = 0.2, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+   Maneuver ImpulsiveBurn2(DefaultSC);
+   Achieve 'AchieveECC' DefaultDC(DefaultSC.Luna.ECC = 0, {Tolerance = 0.2});
+EndTarget;  % For targeter DefaultDC
+Propagate 'Propagate3' DefaultProp(DefaultSC) {DefaultSC.ElapsedDays = 4, OrbitColor = [0 255 255]};

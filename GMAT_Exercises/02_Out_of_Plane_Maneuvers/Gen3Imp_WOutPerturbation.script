@@ -1,0 +1,278 @@
+%General Mission Analysis Tool(GMAT) Script
+%Created: 2025-12-10 17:48:26
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft DefaultSC;
+DefaultSC.DateFormat = UTCGregorian;
+DefaultSC.Epoch = '13 Feb 2013 10:02:00.000';
+DefaultSC.CoordinateSystem = EarthMJ2000Eq;
+DefaultSC.DisplayStateType = Keplerian;
+DefaultSC.SMA = 7079.999999999994;
+DefaultSC.ECC = 9.999999999983918e-05;
+DefaultSC.INC = 49.99999999999998;
+DefaultSC.RAAN = 170;
+DefaultSC.AOP = 0;
+DefaultSC.TA = 2.091309789151873e-06;
+DefaultSC.DryMass = 850;
+DefaultSC.Cd = 2.2;
+DefaultSC.Cr = 1.8;
+DefaultSC.DragArea = 15;
+DefaultSC.SRPArea = 1;
+DefaultSC.SPADDragScaleFactor = 1;
+DefaultSC.SPADSRPScaleFactor = 1;
+DefaultSC.AtmosDensityScaleFactor = 1;
+DefaultSC.ExtendedMassPropertiesModel = 'None';
+DefaultSC.NAIFId = -10001001;
+DefaultSC.NAIFIdReferenceFrame = -9001001;
+DefaultSC.OrbitColor = Red;
+DefaultSC.TargetColor = Teal;
+DefaultSC.OrbitErrorCovariance = [ 1e+70 0 0 0 0 0 ; 0 1e+70 0 0 0 0 ; 0 0 1e+70 0 0 0 ; 0 0 0 1e+70 0 0 ; 0 0 0 0 1e+70 0 ; 0 0 0 0 0 1e+70 ];
+DefaultSC.CdSigma = 1e+70;
+DefaultSC.CrSigma = 1e+70;
+DefaultSC.Id = 'SatId';
+DefaultSC.Attitude = CoordinateSystemFixed;
+DefaultSC.SPADSRPInterpolationMethod = Bilinear;
+DefaultSC.SPADSRPScaleFactorSigma = 1e+70;
+DefaultSC.SPADDragInterpolationMethod = Bilinear;
+DefaultSC.SPADDragScaleFactorSigma = 1e+70;
+DefaultSC.AtmosDensityScaleFactorSigma = 1e+70;
+DefaultSC.ModelFile = 'aura.3ds';
+DefaultSC.ModelOffsetX = 0;
+DefaultSC.ModelOffsetY = 0;
+DefaultSC.ModelOffsetZ = 0;
+DefaultSC.ModelRotationX = 0;
+DefaultSC.ModelRotationY = 0;
+DefaultSC.ModelRotationZ = 0;
+DefaultSC.ModelScale = 1;
+DefaultSC.AttitudeDisplayStateType = 'Quaternion';
+DefaultSC.AttitudeRateDisplayStateType = 'AngularVelocity';
+DefaultSC.AttitudeCoordinateSystem = EarthMJ2000Eq;
+DefaultSC.EulerAngleSequence = '321';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%----------------------------------------
+%---------- ForceModels
+%----------------------------------------
+
+Create ForceModel DefaultProp_ForceModel;
+DefaultProp_ForceModel.CentralBody = Earth;
+DefaultProp_ForceModel.PrimaryBodies = {Earth};
+DefaultProp_ForceModel.Drag = None;
+DefaultProp_ForceModel.SRP = Off;
+DefaultProp_ForceModel.RelativisticCorrection = Off;
+DefaultProp_ForceModel.ErrorControl = RSSStep;
+DefaultProp_ForceModel.GravityField.Earth.Degree = 1;
+DefaultProp_ForceModel.GravityField.Earth.Order = 0;
+DefaultProp_ForceModel.GravityField.Earth.StmLimit = 100;
+DefaultProp_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
+DefaultProp_ForceModel.GravityField.Earth.TideModel = 'None';
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator DefaultProp;
+DefaultProp.FM = DefaultProp_ForceModel;
+DefaultProp.Type = RungeKutta89;
+DefaultProp.InitialStepSize = 60;
+DefaultProp.Accuracy = 9.999999999999999e-12;
+DefaultProp.MinStep = 0.001;
+DefaultProp.MaxStep = 2700;
+DefaultProp.MaxStepAttempts = 50;
+DefaultProp.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Burns
+%----------------------------------------
+
+Create ImpulsiveBurn DeltaV1;
+DeltaV1.CoordinateSystem = Local;
+DeltaV1.Origin = Earth;
+DeltaV1.Axes = VNB;
+DeltaV1.Element1 = 0.9695874441483801;
+DeltaV1.Element2 = 0.718993768083069;
+DeltaV1.Element3 = 0;
+DeltaV1.DecrementMass = false;
+DeltaV1.Isp = 300;
+DeltaV1.GravitationalAccel = 9.81;
+
+Create ImpulsiveBurn DeltaV2;
+DeltaV2.CoordinateSystem = Local;
+DeltaV2.Origin = Earth;
+DeltaV2.Axes = VNB;
+DeltaV2.Element1 = -1.04289257794389;
+DeltaV2.Element2 = -2.968187193330376;
+DeltaV2.Element3 = 0;
+DeltaV2.DecrementMass = false;
+DeltaV2.Isp = 300;
+DeltaV2.GravitationalAccel = 9.81;
+
+Create ImpulsiveBurn DeltaV3;
+DeltaV3.CoordinateSystem = Local;
+DeltaV3.Origin = Earth;
+DeltaV3.Axes = VNB;
+DeltaV3.Element1 = 0;
+DeltaV3.Element2 = 0;
+DeltaV3.Element3 = 0;
+DeltaV3.DecrementMass = false;
+DeltaV3.Isp = 300;
+DeltaV3.GravitationalAccel = 9.81;
+
+%----------------------------------------
+%---------- Solvers
+%----------------------------------------
+
+Create DifferentialCorrector DefaultDC;
+DefaultDC.ShowProgress = true;
+DefaultDC.ReportStyle = Normal;
+DefaultDC.ReportFile = 'DifferentialCorrectorDefaultDC.data';
+DefaultDC.MaximumIterations = 25;
+DefaultDC.DerivativeMethod = ForwardDifference;
+DefaultDC.Algorithm = NewtonRaphson;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create OrbitView DefaultOrbitView;
+DefaultOrbitView.SolverIterations = Current;
+DefaultOrbitView.UpperLeft = [ 0.1183723797780518 0.2772277227722773 ];
+DefaultOrbitView.Size = [ 0.5511713933415536 0.4504950495049505 ];
+DefaultOrbitView.RelativeZOrder = 406;
+DefaultOrbitView.Maximized = false;
+DefaultOrbitView.Add = {DefaultSC, Earth};
+DefaultOrbitView.CoordinateSystem = EarthMJ2000Eq;
+DefaultOrbitView.DrawObject = [ true true ];
+DefaultOrbitView.DataCollectFrequency = 1;
+DefaultOrbitView.UpdatePlotFrequency = 50;
+DefaultOrbitView.NumPointsToRedraw = 0;
+DefaultOrbitView.ShowPlot = true;
+DefaultOrbitView.MaxPlotPoints = 20000;
+DefaultOrbitView.ShowLabels = true;
+DefaultOrbitView.ViewPointReference = Earth;
+DefaultOrbitView.ViewPointVector = [ 30000 0 0 ];
+DefaultOrbitView.ViewDirection = Earth;
+DefaultOrbitView.ViewScaleFactor = 1;
+DefaultOrbitView.ViewUpCoordinateSystem = EarthMJ2000Eq;
+DefaultOrbitView.ViewUpAxis = Z;
+DefaultOrbitView.EclipticPlane = Off;
+DefaultOrbitView.XYPlane = On;
+DefaultOrbitView.WireFrame = Off;
+DefaultOrbitView.Axes = On;
+DefaultOrbitView.Grid = Off;
+DefaultOrbitView.SunLine = Off;
+DefaultOrbitView.UseInitialView = On;
+DefaultOrbitView.StarCount = 7000;
+DefaultOrbitView.EnableStars = On;
+DefaultOrbitView.EnableConstellations = On;
+
+Create GroundTrackPlot DefaultGroundTrackPlot;
+DefaultGroundTrackPlot.SolverIterations = Current;
+DefaultGroundTrackPlot.UpperLeft = [ -0.009247842170160296 0.1225247524752475 ];
+DefaultGroundTrackPlot.Size = [ 0.5487053020961775 0.556930693069307 ];
+DefaultGroundTrackPlot.RelativeZOrder = 411;
+DefaultGroundTrackPlot.Maximized = false;
+DefaultGroundTrackPlot.Add = {DefaultSC};
+DefaultGroundTrackPlot.DataCollectFrequency = 1;
+DefaultGroundTrackPlot.UpdatePlotFrequency = 50;
+DefaultGroundTrackPlot.NumPointsToRedraw = 0;
+DefaultGroundTrackPlot.ShowPlot = true;
+DefaultGroundTrackPlot.MaxPlotPoints = 20000;
+DefaultGroundTrackPlot.CentralBody = Earth;
+DefaultGroundTrackPlot.TextureMap = 'ModifiedBlueMarble.jpg';
+
+Create XYPlot XYPlotSMAG;
+XYPlotSMAG.SolverIterations = Current;
+XYPlotSMAG.UpperLeft = [ 0.06596794081381011 0.07797029702970297 ];
+XYPlotSMAG.Size = [ 0.6664611590628853 0.5655940594059405 ];
+XYPlotSMAG.RelativeZOrder = 453;
+XYPlotSMAG.Maximized = false;
+XYPlotSMAG.XVariable = DefaultSC.A1ModJulian;
+XYPlotSMAG.YVariables = {DefaultSC.Earth.SMA};
+XYPlotSMAG.ShowGrid = true;
+XYPlotSMAG.ShowPlot = true;
+
+Create ReportFile ReportFile1;
+ReportFile1.SolverIterations = Current;
+ReportFile1.UpperLeft = [ 0.09062885326757091 -0.0297029702970297 ];
+ReportFile1.Size = [ 0.7157829839704068 1.092821782178218 ];
+ReportFile1.RelativeZOrder = 465;
+ReportFile1.Maximized = false;
+ReportFile1.Filename = 'C:\Users\Simone\Downloads\ExamSFD_VivianaGargiuloVers2\ExamSFD_VivianaGargiuloVers2\Report_Viviana.txt';
+ReportFile1.Precision = 16;
+ReportFile1.Add = {DefaultSC.A1ModJulian, DefaultSC.Earth.RMAG, DefaultSC.EarthMJ2000Eq.INC, DefaultSC.EarthMJ2000Eq.RAAN, DefaultSC.Earth.ECC, DefaultSC.EarthMJ2000Eq.VMAG, DefaultSC.Earth.SMA};
+ReportFile1.WriteHeaders = true;
+ReportFile1.LeftJustify = On;
+ReportFile1.ZeroFill = Off;
+ReportFile1.FixedWidth = true;
+ReportFile1.Delimiter = ' ';
+ReportFile1.ColumnWidth = 23;
+ReportFile1.WriteReport = true;
+
+Create XYPlot XYPlotINC;
+XYPlotINC.SolverIterations = Current;
+XYPlotINC.UpperLeft = [ 0.02034525277435265 0.1584158415841584 ];
+XYPlotINC.Size = [ 0.5505548705302096 0.4504950495049505 ];
+XYPlotINC.RelativeZOrder = 416;
+XYPlotINC.Maximized = false;
+XYPlotINC.XVariable = DefaultSC.A1ModJulian;
+XYPlotINC.YVariables = {DefaultSC.EarthMJ2000Eq.INC};
+XYPlotINC.ShowGrid = true;
+XYPlotINC.ShowPlot = true;
+
+Create XYPlot XYPlotRAAN;
+XYPlotRAAN.SolverIterations = Current;
+XYPlotRAAN.UpperLeft = [ 0.01048088779284834 0.2004950495049505 ];
+XYPlotRAAN.Size = [ 0.5505548705302096 0.4504950495049505 ];
+XYPlotRAAN.RelativeZOrder = 421;
+XYPlotRAAN.Maximized = false;
+XYPlotRAAN.XVariable = DefaultSC.A1ModJulian;
+XYPlotRAAN.YVariables = {DefaultSC.EarthMJ2000Eq.RAAN};
+XYPlotRAAN.ShowGrid = true;
+XYPlotRAAN.ShowPlot = true;
+
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+
+BeginMissionSequence;
+Propagate 'PropagateOneOrbit' DefaultProp(DefaultSC) {DefaultSC.ElapsedDays = 0.068619432901336, OrbitColor = [255 255 255]};
+Propagate 'PropagateToU1' DefaultProp(DefaultSC) {DefaultSC.ElapsedDays = 0.001265247204229};
+Maneuver DeltaV1(DefaultSC);
+Propagate 'PropagateApoapsis' DefaultProp(DefaultSC) {DefaultSC.Earth.Apoapsis, OrbitColor = [0 255 0]};
+Maneuver DeltaV2(DefaultSC);
+Propagate 'PropagatePeriapsis' DefaultProp(DefaultSC) {DefaultSC.Earth.Periapsis, OrbitColor = [255 255 0]};
+Target 'TargetFinalOrbit' DefaultDC {SolveMode = Solve, ExitMode = DiscardAndContinue, ShowProgressWindow = true};
+   Vary 'Delta3V' DefaultDC(DeltaV3.Element1 = -0.9695874441483801, {Perturbation = 0.0001, Lower = -3, Upper = 2, MaxStep = 0.1, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+   Vary 'Delta3N' DefaultDC(DeltaV3.Element2 = -0.71899376808307, {Perturbation = 0.0001, Lower = -2, Upper = 2, MaxStep = 0.1, AdditiveScaleFactor = 0.0, MultiplicativeScaleFactor = 1.0});
+   Maneuver DeltaV3(DefaultSC);
+   Achieve 'AchieveSMA' DefaultDC(DefaultSC.Earth.SMA = 7080, {Tolerance = 0.1});
+   Achieve 'AchieveECC' DefaultDC(DefaultSC.Earth.ECC = 0.001, {Tolerance = 0.1});
+   Achieve 'AchieveINC' DefaultDC(DefaultSC.EarthMJ2000Eq.INC = 98.2, {Tolerance = 0.1});
+   Achieve 'AchieveRAAN' DefaultDC(DefaultSC.EarthMJ2000Eq.RAAN = 175.012, {Tolerance = 0.1});
+EndTarget;  % For targeter DefaultDC
+Propagate 'PropagateFinalOrbit' DefaultProp(DefaultSC) {DefaultSC.ElapsedDays = 0.068619432901336, OrbitColor = [255 128 64]};
