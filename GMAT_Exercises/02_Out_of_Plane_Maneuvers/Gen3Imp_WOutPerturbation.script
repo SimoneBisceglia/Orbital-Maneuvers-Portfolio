@@ -5,7 +5,7 @@
 %----------------------------------------
 %---------- Spacecraft
 %----------------------------------------
-
+ 
 Create Spacecraft DefaultSC;
 DefaultSC.DateFormat = UTCGregorian;
 DefaultSC.Epoch = '13 Feb 2013 10:02:00.000';
