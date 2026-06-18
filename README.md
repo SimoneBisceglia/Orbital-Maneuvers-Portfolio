@@ -23,7 +23,7 @@ Developed GMAT and MATLAB simulations for advanced flight dynamics missions, foc
 ---
 
 ## 🛠 Tools & Skills
-* **Software:** MATLAB, GMAT (General Mission Analysis Tool).
+* **Software:** Python (Orekit, NumPy, SciPy), MATLAB, GMAT (General Mission Analysis Tool).
 * **Core Competencies:** Astrodynamics, Orbital Perturbations (J2, Drag), Trajectory Optimization, Numerical Targeting, Delta-V Budgeting.
 
 > **Note:** Plot images and simulation scripts are located within their respective sub-folders under `GMAT_Exercises`.
