@@ -13,7 +13,7 @@ Developed GMAT, MATLAB, and Python (Orekit) simulations for advanced flight dyna
 *   **Out-of-Plane Maneuvers & Perturbations:**
     *   **Inclination Changes (1-Impulse vs. 3-Impulse):** Evaluated plane change strategies, proving the energy efficiency of shifting the node to the apogee (3-Impulse) compared to a single-impulse burn.
     *   **General vs. Restricted Optimization:** Demonstrated that the General 3-Impulse method yields the absolute global minimum Delta-V by optimizing thrust angles across all maneuvers.
-    *   **J2 Perturbation:** Modeled the Earth's oblateness (J_2 effect) causing RAAN (Right Ascension of Ascending Node) regression.
+    *   **J2 Perturbation:** Modeled the Earth's oblateness (J2 effect) causing RAAN (Right Ascension of Ascending Node) regression.
     *   **Target Compensation:** Implemented time-of-flight drift compensation to ensure precise target orbit insertion despite nodal drift.
 *   **Earth-Moon-Earth Mission:**
     *   **Lunar Transfer (Patched Conics):** Modeled the full trajectory architecture, computing escape (TLI) and capture (LOI) maneuvers for lunar orbit insertion and circularization.
@@ -33,7 +33,7 @@ Developed GMAT, MATLAB, and Python (Orekit) simulations for advanced flight dyna
 
 ## 🛠 Tools & Skills
 *   **Software:** Python (Orekit, NumPy, SciPy), MATLAB, GMAT (General Mission Analysis Tool).
-*   **Core Competencies:** Astrodinamica, Orbital Perturbations (J_2, Drag, SRP, Third-Body), Trajectory Optimization, Numerical Targeting, Delta-V Budgeting, Orbital Rendezvous.
+*   **Core Competencies:** Astrodinamica, Orbital Perturbations (J2, Drag, SRP, Third-Body), Trajectory Optimization, Numerical Targeting, Delta-V Budgeting, Orbital Rendezvous.
 
 ---
 *Note: Plot images and simulation scripts are located within their respective sub-folders.*
