@@ -20,7 +20,7 @@ Developed GMAT, MATLAB, and Python (Orekit) simulations for advanced flight dyna
     *   **Atmospheric Re-entry & Drag:** Simulated a high-energy return trajectory, implementing atmospheric drag models to compute capture dynamics.
     *   **Numerical Targeting:** Solved complex convergence issues in GMAT using a 2-DOF strategy to precisely hit the narrow re-entry corridor.
 *   **Operational Orbits GMAT:**
-    *   **Sun-Synchronous Orbit (SSO) Dawn-Dusk:** Simulated a 6 AM - 6 PM orbit, validating constant Local Solar Time (LST) and analyzing visual differences between inertial (ECI) and body-fixed (ECEF) ground tracks.
+    *   **Sun-Synchronous Orbit (SSO):** Simulated a 6 AM - 6 PM, 12 PM - 12 AM orbit, validating constant Local Solar Time (LST) and analyzing visual differences between inertial (ECI) and body-fixed (ECEF) ground tracks.
     *   **Molniya Constellation (HEO):** Designed a 3-satellite constellation at critical inclination (63.4°). Visualized apogee loops and continuous high-latitude coverage while mitigating J2-induced Argument of Perigee drift.
     *   **Geostationary Orbit (GEO):** Evaluated equatorial orbits matching Earth's rotation period for continuous regional coverage.
 
