@@ -25,7 +25,7 @@ Developed GMAT, MATLAB, and Python (Orekit) simulations for advanced flight dyna
     *   **Geostationary Orbit (GEO):** Evaluated equatorial orbits matching Earth's rotation period for continuous regional coverage.
 
 ### 2. Python & Orekit High-Fidelity Simulations (`orekit/python`)
-*   **In-Plane & Out-of-Plane Manoeuvres:** Python-based implementation of fundamental orbital transfers using Orekit wrappers.
+*   **In-Plane & Out-of-Plane Maneuvers:** Python-based implementation of fundamental orbital transfers using Orekit wrappers.
 *   **Earth-Moon Ephemeris:** Core scripts modeling the Earth-Moon system dynamics.
 *   **High-Fidelity Perturbations & Propagators:** 
     *   Configured numerical propagators utilizing advanced integrators (Dormand-Prince 853).
