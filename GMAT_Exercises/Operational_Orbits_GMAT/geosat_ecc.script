@@ -1,0 +1,224 @@
+%General Mission Analysis Tool(GMAT) Script
+%Created: 2017-08-11 17:21:43
+
+
+%----------------------------------------
+%---------- Spacecraft
+%----------------------------------------
+
+Create Spacecraft Geosat;
+GMAT Geosat.DateFormat = UTCGregorian;
+GMAT Geosat.Epoch = '21 Mar 2000 11:59:28.000';
+GMAT Geosat.CoordinateSystem = EarthMJ2000Eq;
+GMAT Geosat.DisplayStateType = Keplerian;
+GMAT Geosat.SMA = 42163.99999999992;
+GMAT Geosat.ECC = 1.899871191104093e-16;
+GMAT Geosat.INC = 0;
+GMAT Geosat.RAAN = 0;
+GMAT Geosat.AOP = 0;
+GMAT Geosat.TA = 9.999999999999975;
+GMAT Geosat.DryMass = 100;
+GMAT Geosat.Cd = 2.2;
+GMAT Geosat.Cr = 1.8;
+GMAT Geosat.DragArea = 15;
+GMAT Geosat.SRPArea = 10;
+GMAT Geosat.SPADDragScaleFactor = 1;
+GMAT Geosat.SPADSRPScaleFactor = 1;
+GMAT Geosat.AtmosDensityScaleFactor = 1;
+GMAT Geosat.ExtendedMassPropertiesModel = 'None';
+GMAT Geosat.NAIFId = -10001001;
+GMAT Geosat.NAIFIdReferenceFrame = -9001001;
+GMAT Geosat.OrbitColor = Red;
+GMAT Geosat.TargetColor = Teal;
+GMAT Geosat.OrbitErrorCovariance = [ 1e+70 0 0 0 0 0 ; 0 1e+70 0 0 0 0 ; 0 0 1e+70 0 0 0 ; 0 0 0 1e+70 0 0 ; 0 0 0 0 1e+70 0 ; 0 0 0 0 0 1e+70 ];
+GMAT Geosat.CdSigma = 1e+70;
+GMAT Geosat.CrSigma = 1e+70;
+GMAT Geosat.Id = 'SatId';
+GMAT Geosat.Attitude = CoordinateSystemFixed;
+GMAT Geosat.SPADSRPInterpolationMethod = Bilinear;
+GMAT Geosat.SPADSRPScaleFactorSigma = 1e+70;
+GMAT Geosat.SPADDragInterpolationMethod = Bilinear;
+GMAT Geosat.SPADDragScaleFactorSigma = 1e+70;
+GMAT Geosat.AtmosDensityScaleFactorSigma = 1e+70;
+GMAT Geosat.ModelFile = 'aura.3ds';
+GMAT Geosat.ModelOffsetX = 0;
+GMAT Geosat.ModelOffsetY = 0;
+GMAT Geosat.ModelOffsetZ = 0;
+GMAT Geosat.ModelRotationX = 0;
+GMAT Geosat.ModelRotationY = 0;
+GMAT Geosat.ModelRotationZ = 0;
+GMAT Geosat.ModelScale = 1;
+GMAT Geosat.AttitudeDisplayStateType = 'Quaternion';
+GMAT Geosat.AttitudeRateDisplayStateType = 'AngularVelocity';
+GMAT Geosat.AttitudeCoordinateSystem = EarthFixed;
+GMAT Geosat.EulerAngleSequence = '321';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%----------------------------------------
+%---------- ForceModels
+%----------------------------------------
+
+Create ForceModel DefaultProp_ForceModel;
+GMAT DefaultProp_ForceModel.CentralBody = Earth;
+GMAT DefaultProp_ForceModel.PrimaryBodies = {Earth};
+GMAT DefaultProp_ForceModel.PointMasses = {Luna, Sun};
+GMAT DefaultProp_ForceModel.Drag = None;
+GMAT DefaultProp_ForceModel.SRP = On;
+GMAT DefaultProp_ForceModel.RelativisticCorrection = Off;
+GMAT DefaultProp_ForceModel.ErrorControl = RSSStep;
+GMAT DefaultProp_ForceModel.GravityField.Earth.Degree = 20;
+GMAT DefaultProp_ForceModel.GravityField.Earth.Order = 20;
+GMAT DefaultProp_ForceModel.GravityField.Earth.StmLimit = 100;
+GMAT DefaultProp_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
+GMAT DefaultProp_ForceModel.GravityField.Earth.TideModel = 'None';
+GMAT DefaultProp_ForceModel.SRP.Flux = 1367;
+GMAT DefaultProp_ForceModel.SRP.SRPModel = Spherical;
+GMAT DefaultProp_ForceModel.SRP.Nominal_Sun = 149597870.691;
+
+%----------------------------------------
+%---------- Propagators
+%----------------------------------------
+
+Create Propagator DefaultProp;
+GMAT DefaultProp.FM = DefaultProp_ForceModel;
+GMAT DefaultProp.Type = RungeKutta89;
+GMAT DefaultProp.InitialStepSize = 60;
+GMAT DefaultProp.Accuracy = 9.999999999999999e-12;
+GMAT DefaultProp.MinStep = 0.001;
+GMAT DefaultProp.MaxStep = 2700;
+GMAT DefaultProp.MaxStepAttempts = 50;
+GMAT DefaultProp.StopIfAccuracyIsViolated = true;
+
+%----------------------------------------
+%---------- Subscribers
+%----------------------------------------
+
+Create GroundTrackPlot DefaultGroundTrackPlot;
+GMAT DefaultGroundTrackPlot.SolverIterations = Current;
+GMAT DefaultGroundTrackPlot.UpperLeft = [ 0.2043478260869565 0.1090909090909091 ];
+GMAT DefaultGroundTrackPlot.Size = [ 0.586231884057971 0.45 ];
+GMAT DefaultGroundTrackPlot.RelativeZOrder = 43;
+GMAT DefaultGroundTrackPlot.Maximized = true;
+GMAT DefaultGroundTrackPlot.Add = {Geosat};
+GMAT DefaultGroundTrackPlot.DataCollectFrequency = 1;
+GMAT DefaultGroundTrackPlot.UpdatePlotFrequency = 50;
+GMAT DefaultGroundTrackPlot.NumPointsToRedraw = 500;
+GMAT DefaultGroundTrackPlot.ShowPlot = true;
+GMAT DefaultGroundTrackPlot.MaxPlotPoints = 20000;
+GMAT DefaultGroundTrackPlot.CentralBody = Earth;
+GMAT DefaultGroundTrackPlot.TextureMap = 'ModifiedBlueMarble.jpg';
+
+Create XYPlot XYPlot1;
+GMAT XYPlot1.SolverIterations = Current;
+GMAT XYPlot1.UpperLeft = [ 0 0 ];
+GMAT XYPlot1.Size = [ 0.5 0.45 ];
+GMAT XYPlot1.RelativeZOrder = 31;
+GMAT XYPlot1.Maximized = false;
+GMAT XYPlot1.XVariable = Geosat.Earth.Longitude;
+GMAT XYPlot1.YVariables = {Geosat.Earth.Latitude};
+GMAT XYPlot1.ShowGrid = true;
+GMAT XYPlot1.ShowPlot = true;
+
+Create OrbitView OrbitView1;
+GMAT OrbitView1.SolverIterations = Current;
+GMAT OrbitView1.UpperLeft = [ 0.002173913043478261 0 ];
+GMAT OrbitView1.Size = [ 0.5 0.45 ];
+GMAT OrbitView1.RelativeZOrder = 47;
+GMAT OrbitView1.Maximized = true;
+GMAT OrbitView1.Add = {Geosat, Earth};
+GMAT OrbitView1.CoordinateSystem = EarthMJ2000Eq;
+GMAT OrbitView1.DrawObject = [ true true ];
+GMAT OrbitView1.DataCollectFrequency = 1;
+GMAT OrbitView1.UpdatePlotFrequency = 50;
+GMAT OrbitView1.NumPointsToRedraw = 0;
+GMAT OrbitView1.ShowPlot = true;
+GMAT OrbitView1.MaxPlotPoints = 20000;
+GMAT OrbitView1.ShowLabels = true;
+GMAT OrbitView1.ViewPointReference = Earth;
+GMAT OrbitView1.ViewPointVector = [ 0 0 100000 ];
+GMAT OrbitView1.ViewDirection = Earth;
+GMAT OrbitView1.ViewScaleFactor = 1;
+GMAT OrbitView1.ViewUpCoordinateSystem = EarthMJ2000Eq;
+GMAT OrbitView1.ViewUpAxis = Z;
+GMAT OrbitView1.EclipticPlane = Off;
+GMAT OrbitView1.XYPlane = On;
+GMAT OrbitView1.WireFrame = Off;
+GMAT OrbitView1.Axes = On;
+GMAT OrbitView1.Grid = Off;
+GMAT OrbitView1.SunLine = Off;
+GMAT OrbitView1.UseInitialView = On;
+GMAT OrbitView1.StarCount = 7000;
+GMAT OrbitView1.EnableStars = On;
+GMAT OrbitView1.EnableConstellations = On;
+
+Create OrbitView OrbitView2;
+GMAT OrbitView2.SolverIterations = Current;
+GMAT OrbitView2.UpperLeft = [ 0.001449275362318841 0.45 ];
+GMAT OrbitView2.Size = [ 0.5 0.45 ];
+GMAT OrbitView2.RelativeZOrder = 51;
+GMAT OrbitView2.Maximized = true;
+GMAT OrbitView2.Add = {Geosat, Earth};
+GMAT OrbitView2.CoordinateSystem = EarthFixed;
+GMAT OrbitView2.DrawObject = [ true true ];
+GMAT OrbitView2.DataCollectFrequency = 1;
+GMAT OrbitView2.UpdatePlotFrequency = 50;
+GMAT OrbitView2.NumPointsToRedraw = 0;
+GMAT OrbitView2.ShowPlot = true;
+GMAT OrbitView2.MaxPlotPoints = 20000;
+GMAT OrbitView2.ShowLabels = true;
+GMAT OrbitView2.ViewPointReference = Earth;
+GMAT OrbitView2.ViewPointVector = [ 0 0 30000 ];
+GMAT OrbitView2.ViewDirection = Earth;
+GMAT OrbitView2.ViewScaleFactor = 1;
+GMAT OrbitView2.ViewUpCoordinateSystem = EarthMJ2000Eq;
+GMAT OrbitView2.ViewUpAxis = Z;
+GMAT OrbitView2.EclipticPlane = Off;
+GMAT OrbitView2.XYPlane = On;
+GMAT OrbitView2.WireFrame = Off;
+GMAT OrbitView2.Axes = On;
+GMAT OrbitView2.Grid = Off;
+GMAT OrbitView2.SunLine = Off;
+GMAT OrbitView2.UseInitialView = On;
+GMAT OrbitView2.StarCount = 7000;
+GMAT OrbitView2.EnableStars = On;
+GMAT OrbitView2.EnableConstellations = On;
+
+Create XYPlot XYPlot2;
+GMAT XYPlot2.SolverIterations = Current;
+GMAT XYPlot2.UpperLeft = [ 0.001449275362318841 0.45 ];
+GMAT XYPlot2.Size = [ 0.5 0.45 ];
+GMAT XYPlot2.RelativeZOrder = 55;
+GMAT XYPlot2.Maximized = true;
+GMAT XYPlot2.XVariable = Geosat.A1ModJulian;
+GMAT XYPlot2.YVariables = {Geosat.Earth.ECC, Geosat.EarthMJ2000Eq.BrouwerShortECC};
+GMAT XYPlot2.ShowGrid = true;
+GMAT XYPlot2.ShowPlot = true;
+
+
+%----------------------------------------
+%---------- Mission Sequence
+%----------------------------------------
+
+BeginMissionSequence;
+Propagate DefaultProp(Geosat) {Geosat.ElapsedDays = 5, OrbitColor = [0 255 255]};
