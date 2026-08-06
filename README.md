@@ -23,7 +23,12 @@ Developed GMAT, MATLAB, and Python (Orekit) simulations for advanced flight dyna
     *   **Sun-Synchronous Orbit (SSO):** Simulated a 6 AM - 6 PM, 12 PM - 12 AM orbit, validating constant Local Solar Time (LST) and analyzing visual differences between inertial (ECI) and body-fixed (ECEF) ground tracks.
     *   **Molniya Constellation (HEO):** Designed a 3-satellite constellation at critical inclination (63.4°). Visualized apogee loops and continuous high-latitude coverage while mitigating J2-induced Argument of Perigee drift.
     *   **Geostationary Orbit (GEO):** Evaluated equatorial orbits matching Earth's rotation period for continuous regional coverage.
-
+*   **Orbital Maintenance & Station Keeping (LEO & GEO):**
+        * **LEO Drag Make-Up (SMA Control):** Evaluated semi-major axis decay caused by atmospheric drag over time, implementing periodic tangential maneuvers that yielded characteristic step-like SMA recovery profiles.
+        * **GEO North-South Station Keeping (Inclination Control):** Modeled luni-solar perturbations causing orbital plane tilting, successfully correcting inclination back to equatorial tolerance bands via normal impulses targeted at node crossings.
+        * **GEO East-West Station Keeping (Longitude Control):** Analyzed longitudinal drift driven by Earth's triaxiality (J22) and solar radiation pressure, implementing a drift-and-burn strategy using temporary semi-major axis shifts to bound sub-satellite longitude within operational deadbands.
+        * **Methodology & Visualization Note:** All Delta-V budgets were analytically sized in MATLAB and verified via GMAT numerical propagation. 3D orbit views were intentionally omitted in favor of specialized 2D evolution plots (SMA, Inclination, and Earth Longitude vs. Time) to accurately capture secular variations and deadband control limits.
+    
 ### 2. Python & Orekit High-Fidelity Simulations (`orekit/python`)
 *   **In-Plane & Out-of-Plane Maneuvers:** Python-based implementation of fundamental orbital transfers using Orekit wrappers.
 *   **Earth-Moon Ephemeris:** Core scripts modeling the Earth-Moon system dynamics.
