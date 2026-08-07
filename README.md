@@ -1,48 +1,37 @@
 # Orbital Maneuvers & Mission Analysis Portfolio
 
-Developed GMAT, MATLAB, and Python (Orekit) simulations for advanced flight dynamics missions, focusing on trajectory optimization, Delta-V calculation and perturbation environments.
+Developed GMAT, MATLAB, and Python (Orekit) simulations for advanced flight dynamics missions, focusing on trajectory optimization, Delta-V calculation, and perturbation environments.
 
 ## 📁 Project Structure
 
 ### 1. GMAT & MATLAB Exercises (`GMAT_Exercises`)
 *   **In-Plane Maneuvers:** 
-    *   **Hohmann vs. Bi-Elliptic Transfers:** Simulated radius change maneuvers.
-    *   **Optimization:** Demonstrated that for large target-to-initial radius ratios, the Bi-Elliptic transfer is more fuel-efficient than Hohmann by exploiting lower velocities at higher apogees.
-    *   **Rendezvous Phasing:** Implemented targeted phasing maneuvers and co-elliptic/co-planar rendezvous sequences with target coordination.
-    *   **Validation:** All Delta-V budgets were calculated analytically in MATLAB and verified via GMAT numerical propagation.
+    *   **Hohmann vs. Bi-Elliptic:** Simulated radius changes, proving Bi-Elliptic fuel efficiency for large radius ratios.
+    *   **Rendezvous Phasing:** Implemented targeted co-elliptic/co-planar rendezvous sequences.
 *   **Out-of-Plane Maneuvers & Perturbations:**
-    *   **Inclination Changes (1-Impulse vs. 3-Impulse):** Evaluated plane change strategies, proving the energy efficiency of shifting the node to the apogee (3-Impulse) compared to a single-impulse burn.
-    *   **General vs. Restricted Optimization:** Demonstrated that the General 3-Impulse method yields the absolute global minimum Delta-V by optimizing thrust angles across all maneuvers.
-    *   **J2 Perturbation:** Modeled the Earth's oblateness (J2 effect) causing RAAN (Right Ascension of Ascending Node) regression.
-    *   **Target Compensation:** Implemented time-of-flight drift compensation to ensure precise target orbit insertion despite nodal drift.
+    *   **Inclination Changes:** Evaluated 1-Impulse vs. 3-Impulse strategies, proving the global Delta-V minimum of the General 3-Impulse method.
+    *   **J2 Perturbation:** Modeled RAAN regression and implemented time-of-flight drift compensation for precise target orbit insertion.
 *   **Earth-Moon-Earth Mission:**
-    *   **Lunar Transfer (Patched Conics):** Modeled the full trajectory architecture, computing escape (TLI) and capture (LOI) maneuvers for lunar orbit insertion and circularization.
-    *   **Atmospheric Re-entry & Drag:** Simulated a high-energy return trajectory, implementing atmospheric drag models to compute capture dynamics.
-    *   **Numerical Targeting:** Solved complex convergence issues in GMAT using a 2-DOF strategy to precisely hit the narrow re-entry corridor.
+    *   **Lunar Transfer:** Computed TLI/LOI patched-conics maneuvers for lunar capture and circularization.
+    *   **Numerical Targeting & Re-entry:** Solved complex 2-DOF convergence issues in GMAT to precisely hit narrow atmospheric re-entry corridors.
 *   **Operational Orbits GMAT:**
-    *   **Sun-Synchronous Orbit (SSO):** Simulated a 6 AM - 6 PM, 12 PM - 12 AM orbit, validating constant Local Solar Time (LST) and analyzing visual differences between inertial (ECI) and body-fixed (ECEF) ground tracks.
-    *   **Molniya Constellation (HEO):** Designed a 3-satellite constellation at critical inclination (63.4°). Visualized apogee loops and continuous high-latitude coverage while mitigating J2-induced Argument of Perigee drift.
-    *   **Geostationary Orbit (GEO):** Evaluated equatorial orbits matching Earth's rotation period for continuous regional coverage.
+    *   **Sun-Synchronous Orbit (SSO):** Validated constant Local Solar Time (LST) and analyzed repeating ground tracks comparing ECI vs. ECEF visualization.
+    *   **Molniya & GEO:** Designed a 3-satellite HEO constellation at critical inclination for continuous high-latitude coverage, and evaluated continuous regional coverage for GEO.
 *   **Orbital Maintenance & Station Keeping (LEO & GEO):**
-    *   **LEO Drag Make-Up (SMA Control):** Evaluated semi-major axis decay caused by atmospheric drag over time, implementing periodic tangential maneuvers that yielded characteristic step-like SMA recovery profiles.
-    *   **GEO North-South Station Keeping (Inclination Control):** Modeled luni-solar perturbations causing orbital plane tilting, successfully correcting inclination back to equatorial tolerance bands via normal impulses targeted at node crossings.
-    *   **GEO East-West Station Keeping (Longitude Control):** Analyzed longitudinal drift driven by Earth's triaxiality (J22) and solar radiation pressure, implementing a drift-and-burn strategy using temporary semi-major axis shifts to bound sub-satellite longitude within operational deadbands.
-    *   **Methodology & Visualization Note:** All Delta-V budgets were analytically sized in MATLAB and verified via GMAT numerical propagation. 3D orbit views were intentionally omitted in favor of specialized 2D evolution plots (SMA, Inclination, and Earth Longitude vs. Time) to accurately capture secular variations and deadband control limits.
+    *   **LEO Drag Make-Up (SMA Control):** Modeled rapid semi-major axis decay for a spacecraft with a low ballistic coefficient, implementing periodic tangential burns for step-like SMA recovery.
+    *   **GEO Station Keeping:** Corrected luni-solar inclination drift via nodal impulses (North-South) and mitigated J22/SRP longitudinal drift via temporary SMA shifts within operational deadbands (East-West).
+    *   **Methodology Note:** All Delta-V budgets were analytically sized in MATLAB and verified via GMAT. 3D orbit views were intentionally replaced with specialized 2D evolution plots (SMA, Inclination, Longitude vs. Time) to directly highlight secular variations and control boundaries.
     
 ### 2. Python & Orekit High-Fidelity Simulations (`orekit/python`)
-*   **In-Plane & Out-of-Plane Maneuvers:** Python-based implementation of fundamental orbital transfers using Orekit wrappers.
-*   **Earth-Moon Ephemeris:** Core scripts modeling the Earth-Moon system dynamics.
-*   **High-Fidelity Perturbations & Propagators:** 
-    *   Configured numerical propagators utilizing advanced integrators (Dormand-Prince 853).
-    *   **LEO & SSO Analyses:** Modeled Sun-Synchronous Orbits (SSO) tailored for Earth observation and remote sensing missions, evaluating nodal regression and inclination coupling.
-    *   **Molniya Orbits (HEO):** Analyzed highly elliptical orbits tailored for high-latitude telecommunications (focusing on orbital stability and long apogee dwell times).
-    *   **Environmental Perturbations:** Integrated EGM96 gravity fields (harmonic expansions up to 10x10), Harris-Priester atmospheric drag models, Solar Radiation Pressure (SRP), and Luni-Solar Third Body gravitational forces to analyze real orbital decay and apsidal rotation (perigee argument drift).
+*   **Core Mechanics:** Python-based implementation of orbital transfers and Earth-Moon ephemeris using Orekit wrappers.
+*   **High-Fidelity Propagators:** Configured numerical propagators utilizing advanced integrators (Dormand-Prince 853).
+*   **Environmental Perturbations:** Integrated EGM96 gravity fields, Harris-Priester atmospheric drag, Solar Radiation Pressure (SRP), and Luni-Solar Third Body forces to analyze orbital decay and apsidal rotation across LEO, SSO, and Molniya configurations.
 
 ---
 
 ## 🛠 Tools & Skills
 *   **Software:** Python (Orekit, NumPy, SciPy), MATLAB, GMAT (General Mission Analysis Tool).
-*   **Core Competencies:** Astrodinamica, Orbital Perturbations (J2, Drag, SRP, Third-Body), Trajectory Optimization, Numerical Targeting, Delta-V Budgeting, Orbital Rendezvous.
+*   **Core Competencies:** Astrodynamics, Orbital Perturbations (J2, Drag, SRP, Third-Body), Trajectory Optimization, Numerical Targeting, Delta-V Budgeting, Orbital Rendezvous.
 
 ---
 *Note: Plot images and simulation scripts are located within their respective sub-folders.*
