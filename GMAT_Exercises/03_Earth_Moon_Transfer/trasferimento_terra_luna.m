@@ -1,89 +1,89 @@
 %% ========================================================================
-%  ORBITAL MANEUVERS: TRASFERIMENTO TERRA - LUNA (PATCHED CONICS)
+%  ORBITAL MANEUVERS: EARTH - MOON TRANSFER (PATCHED CONICS)
 %  ========================================================================
 clc; clear; close all;
 
-%% 1. COSTANTI E DATI DI INPUT
-% Costanti Fisiche Terra
-mu_E = 398600.4418;             % Parametro gravitazionale Terrestre [km^3/s^2]
-R_E = 6371.0;                   % Raggio medio terrestre [km]
+%% 1. CONSTANTS AND INPUT DATA
+% Earth Physical Constants
+mu_E = 398600.4418;             % Earth gravitational parameter [km^3/s^2]
+R_E = 6371.0;                   % Earth mean radius [km]
 
-% Costanti Fisiche Luna
-mu_M = 4902.8000;               % Parametro gravitazionale Lunare [km^3/s^2]
-R_M = 1737.4;                   % Raggio medio lunare [km]
-D_EM = 384400.0;                % Distanza media Terra-Luna [km]
+% Moon Physical Constants
+mu_M = 4902.8000;               % Moon gravitational parameter [km^3/s^2]
+R_M = 1737.4;                   % Moon mean radius [km]
+D_EM = 384400.0;                % Mean Earth-Moon distance [km]
 
-% Parametri Orbita Iniziale (LEO - Low Earth Orbit)
-h_LEO = 300;                    % Quota di parcheggio terrestre [km]
-r1 = R_E + h_LEO;               % Raggio orbita iniziale [km]
-v_LEO = sqrt(mu_E / r1);        % Velocità circolare LEO [km/s]
+% Initial Orbit Parameters (LEO - Low Earth Orbit)
+h_LEO = 300;                    % Earth parking altitude [km]
+r1 = R_E + h_LEO;               % Initial orbit radius [km]
+v_LEO = sqrt(mu_E / r1);        % LEO circular velocity [km/s]
 
-% Parametri Orbita Finale (LLO - Low Lunar Orbit)
-h_LLO = 100;                    % Quota di parcheggio lunare [km]
-r2 = R_M + h_LLO;               % Raggio orbita lunare target [km]
-v_LLO = sqrt(mu_M / r2);        % Velocità circolare LLO [km/s]
+% Final Orbit Parameters (LLO - Low Lunar Orbit)
+h_LLO = 100;                    % Lunar parking altitude [km]
+r2 = R_M + h_LLO;               % Target lunar orbit radius [km]
+v_LLO = sqrt(mu_M / r2);        % LLO circular velocity [km/s]
 
 fprintf('========================================================\n');
-fprintf('  1. PARAMETRI DELLE ORBITE DI PARCHEGGIO\n');
+fprintf('  1. PARKING ORBITS PARAMETERS\n');
 fprintf('========================================================\n');
-fprintf('Velocita in LEO (Terra): %.4f km/s\n', v_LEO);
-fprintf('Velocita in LLO (Luna):  %.4f km/s\n\n', v_LLO);
+fprintf('LEO Velocity (Earth): %.4f km/s\n', v_LEO);
+fprintf('LLO Velocity (Moon):  %.4f km/s\n\n', v_LLO);
 
-%% 2. FASE 1: TRANS-LUNAR INJECTION (TLI)
-% Vogliamo un'ellisse di trasferimento che parta dalla LEO e arrivi alla Luna.
-% Il raggio di apogeo dell'ellisse è pari alla distanza Terra-Luna.
+%% 2. PHASE 1: TRANS-LUNAR INJECTION (TLI)
+% We want a transfer ellipse departing from LEO and reaching the Moon.
+% The apogee radius of the ellipse equals the Earth-Moon distance.
 r_apogeo_tx = D_EM;
-a_tx = (r1 + r_apogeo_tx) / 2;  % Semiasse maggiore del trasferimento
+a_tx = (r1 + r_apogeo_tx) / 2;  % Semi-major axis of the transfer orbit
 
-% Calcolo velocità sull'ellisse (Equazione della vis-viva)
+% Velocity calculation on the ellipse (Vis-viva equation)
 v_tx_perigeo = sqrt(mu_E * (2/r1 - 1/a_tx));
 v_tx_apogeo = sqrt(mu_E * (2/r_apogeo_tx - 1/a_tx));
 
-% Delta V della manovra di partenza
+% Departure maneuver Delta-V
 DeltaV_TLI = v_tx_perigeo - v_LEO;
 
-% Tempo di volo (Solo andata, quindi metà periodo orbitale)
+% Time of Flight (One-way, hence half orbital period)
 TOF_sec = pi * sqrt(a_tx^3 / mu_E);
 TOF_days = TOF_sec / 86400;
 
 fprintf('========================================================\n');
-fprintf('  2. PARTENZA DALLA TERRA (TRANS-LUNAR INJECTION)\n');
+fprintf('  2. EARTH DEPARTURE (TRANS-LUNAR INJECTION)\n');
 fprintf('========================================================\n');
-fprintf('Velocita necessaria al perigeo: %.4f km/s\n', v_tx_perigeo);
-fprintf('Delta V TLI (Burn 1):           %.4f km/s\n', DeltaV_TLI);
-fprintf('Tempo di Volo (TOF):            %.2f giorni\n\n', TOF_days);
+fprintf('Required perigee velocity: %.4f km/s\n', v_tx_perigeo);
+fprintf('TLI Delta-V (Burn 1):      %.4f km/s\n', DeltaV_TLI);
+fprintf('Time of Flight (TOF):      %.2f days\n\n', TOF_days);
 
-%% 3. FASE 2: ARRIVO E LUNAR ORBIT INSERTION (LOI)
-% Assumiamo che la Luna sia su un'orbita circolare attorno alla Terra
-v_Moon = sqrt(mu_E / D_EM); % Velocità orbitale della Luna [km/s]
+%% 3. PHASE 2: MOON ARRIVAL AND LUNAR ORBIT INSERTION (LOI)
+% Assume the Moon is on a circular orbit around the Earth
+v_Moon = sqrt(mu_E / D_EM);     % Moon orbital velocity [km/s]
 
-% Quando arriviamo all'apogeo dell'ellisse, andiamo più lenti della Luna.
-% La Luna ci "tampona" e ci sorpassa. La velocità relativa tra noi e la Luna è:
-v_inf = v_Moon - v_tx_apogeo; % Eccesso iperbolico (V_infinity) [km/s]
+% When arriving at the transfer ellipse apogee, we are slower than the Moon.
+% The Moon "catches up" and over-takes us. The relative velocity is:
+v_inf = v_Moon - v_tx_apogeo;   % Hyperbolic excess velocity (V_infinity) [km/s]
 
-% Ora entriamo nel sistema di riferimento Lunare.
-% Arriviamo con una iperbole che ha V_inf all'infinito e raggio di pericentro r2 (quota 100km)
-% Conservazione dell'energia per l'iperbole lunare:
+% Now we enter the Lunar reference frame.
+% We arrive via a hyperbola with V_inf at infinity and perilune radius r2 (100km altitude).
+% Energy conservation for the lunar hyperbola:
 v_iperbole_perilenio = sqrt(v_inf^2 + 2*mu_M / r2);
 
-% Delta V per la cattura (frenata da traiettoria iperbolica a circolare)
+% Delta-V for capture (braking from hyperbolic trajectory to circular orbit)
 DeltaV_LOI = v_iperbole_perilenio - v_LLO;
 
 fprintf('========================================================\n');
-fprintf('  3. ARRIVO ALLA LUNA (LUNAR ORBIT INSERTION)\n');
+fprintf('  3. MOON ARRIVAL (LUNAR ORBIT INSERTION)\n');
 fprintf('========================================================\n');
-fprintf('Velocita della Luna:              %.4f km/s\n', v_Moon);
-fprintf('Eccesso Iperbolico (V_inf):       %.4f km/s\n', v_inf);
-fprintf('Vel. Iperbole al perilenio (r2):  %.4f km/s\n', v_iperbole_perilenio);
-fprintf('Delta V LOI (Burn 2 - Frenata):   %.4f km/s\n\n', DeltaV_LOI);
+fprintf('Moon Velocity:                   %.4f km/s\n', v_Moon);
+fprintf('Hyperbolic Excess (V_inf):       %.4f km/s\n', v_inf);
+fprintf('Hyperbola velocity at perilune:  %.4f km/s\n', v_iperbole_perilenio);
+fprintf('LOI Delta-V (Burn 2 - Braking):  %.4f km/s\n\n', DeltaV_LOI);
 
-%% 4. RISULTATI FINALI
+%% 4. FINAL RESULTS
 DeltaV_Tot = DeltaV_TLI + DeltaV_LOI;
 
 fprintf('========================================================\n');
-fprintf('  BUDGET DELTA-V TOTALE \n');
+fprintf('  TOTAL DELTA-V BUDGET \n');
 fprintf('========================================================\n');
-fprintf('Delta V Partenza:  %.4f km/s\n', DeltaV_TLI);
-fprintf('Delta V Cattura:   %.4f km/s\n', DeltaV_LOI);
-fprintf('DELTA V TOTALE:    %.4f km/s\n', DeltaV_Tot);
+fprintf('Departure Delta-V:  %.4f km/s\n', DeltaV_TLI);
+fprintf('Capture Delta-V:    %.4f km/s\n', DeltaV_LOI);
+fprintf('TOTAL DELTA-V:      %.4f km/s\n', DeltaV_Tot);
 fprintf('========================================================\n');
