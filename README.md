@@ -1,6 +1,6 @@
 # Astrodynamics & Flight Dynamics Portfolio
 
-Developed GMAT, MATLAB and Python/Orekit simulations covering orbital mechanics, flight dynamics, perturbation modelling, trajectory optimization and spacecraft navigation.
+Developed GMAT, MATLAB and Python (Orekit) simulations covering orbital mechanics, flight dynamics, perturbation modelling, trajectory optimization and spacecraft navigation.
 
 ## 📁 Project Structure
 
@@ -12,7 +12,7 @@ Developed GMAT, MATLAB and Python/Orekit simulations covering orbital mechanics,
     *   Simulated LEO drag make-up (SMA recovery) and GEO North-South/East-West station keeping within strict operational deadbands. 
     *   *Methodology:* Maneuvers analytically sized in MATLAB and verified in GMAT using 2D evolution plots to track secular variations.
 
-### 2. Python & Orekit High-Fidelity Simulations (`Peyton_Orekit`)
+### 2. Python & Orekit High-Fidelity Simulations (`orekit/python`)
 *   **Astrodynamics & Transfer Optimization:**
     *   Implemented Python-based analytical validations for Earth-Moon Patched Conics (TLI/LOI Delta-V targeting).
     *   Demonstrated theoretical fuel efficiency limits for Bi-Elliptic vs. Hohmann transfers (r2/r1 > 11.94).
