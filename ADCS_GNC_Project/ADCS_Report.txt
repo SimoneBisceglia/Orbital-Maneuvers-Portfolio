@@ -106,6 +106,4 @@ For the investigated mission:
 * THR provides comparable slew authority but suffers from persistent limit-cycle behavior under the implemented On/Off control strategy.
 * MTQ is unable to provide sufficient control authority to demonstrate completion of the required maneuver within the 120-s window.
 
-Therefore, Reaction Wheels are the preferred primary actuator for the considered agile off-nadir maneuver, while MTQs and thrusters remain valuable as complementary actuators for other ADCS functions such as detumbling, momentum unloading, or coarse control.
-
-The final verification of the 120-s requirement should be performed using a quantitative attitude-error metric and a defined settling deadband rather than from the attitude plots alone.
+Therefore, Reaction Wheels are the preferred primary actuator for the considered agile off-nadir maneuver, while MTQs and thrusters remain valuable as complementary actuators for other ADCS functions such as detumbling and momentum unloading.
