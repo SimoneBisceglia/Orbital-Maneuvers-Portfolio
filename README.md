@@ -1,6 +1,6 @@
-# Astrodynamics & Flight Dynamics Portfolio
+# Astrodynamics, Flight Dynamics & GNC Portfolio
 
-Developed GMAT, MATLAB and Python (Orekit) simulations covering orbital mechanics, flight dynamics, perturbation modelling, trajectory optimization and spacecraft navigation.
+Developed GMAT, MATLAB, Simulink and Python (Orekit) simulations covering orbital mechanics, flight dynamics, perturbation modelling, ADCS, trajectory optimization and spacecraft navigation.
 
 ## 📁 Project Structure
 
