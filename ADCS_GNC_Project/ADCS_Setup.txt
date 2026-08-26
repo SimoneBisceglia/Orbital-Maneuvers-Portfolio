@@ -1,0 +1,82 @@
+--- ADCS / GNC SIMULATOR INITIALIZATION ---
+ 
+==============================================================
+              MISSION KINEMATICS SUMMARY
+==============================================================
+ 
+[1] ORBIT PARAMETERS
+Orbital radius              : 7171.000 km
+Orbital angular velocity    : 0.00103968 rad/s
+Orbital period              : 6043.389 s
+--------------------------------------------------------------
+[2] INITIAL STATE - t = 0 s
+Initial Euler angles [deg]:
+Roll  = 0.000 deg
+Pitch = 0.000 deg
+Yaw   = 0.000 deg
+ 
+Initial q_BL = BODY w.r.t. LVLH:
+     1
+     0
+     0
+     0
+
+Initial q_BI = BODY w.r.t. ECI:
+    0.7071
+         0
+    0.7071
+         0
+
+Initial relative angular velocity [rad/s]:
+     0
+     0
+     0
+
+Initial BODY angular velocity w.r.t. ECI [rad/s]:
+         0
+   -0.0010
+         0
+
+--------------------------------------------------------------
+[3] FINAL TARGET STATE - t = T_sim
+Final target Euler angles [deg]:
+Roll  = 30.000 deg
+Pitch = 45.000 deg
+Yaw   = 20.000 deg
+ 
+Final q_BL = BODY w.r.t. LVLH:
+    0.8960
+    0.1713
+    0.4056
+    0.0574
+
+Final q_LI = LVLH w.r.t. ECI:
+    0.8900
+         0
+    0.4560
+         0
+
+Final q_BI = BODY w.r.t. ECI:
+    0.6125
+    0.1263
+    0.7695
+    0.1292
+
+Final relative angular velocity [rad/s]:
+     0
+     0
+     0
+
+Final BODY angular velocity w.r.t. ECI [rad/s]:
+   -0.0002
+   -0.0010
+    0.0002
+
+--------------------------------------------------------------
+[4] VALIDATION
+Initial quaternion norm = 1.000000000000
+Final quaternion norm   = 1.000000000000
+Initial |omega_BI|      = 0.00103968 rad/s
+Final |omega_BI|        = 0.00103968 rad/s
+ 
+==============================================================
