@@ -107,3 +107,6 @@ For the investigated mission:
 * MTQ is unable to provide sufficient control authority to demonstrate completion of the required maneuver within the 120-s window.
 
 Therefore, Reaction Wheels are the preferred primary actuator for the considered agile off-nadir maneuver, while MTQs and thrusters remain valuable as complementary actuators for other ADCS functions such as detumbling and momentum unloading.
+
+Future Developments (State Estimation): To transition from the current baseline to a flight software architecture, future improvements will integrate a Multiplicative Extended Kalman Filter (MEKF). 
+The filter fuses high-frequency gyroscope propagation (prediction) with absolute star tracker measurements (correction) to filter sensor noise, while dynamically estimating and removing real-time gyroscope drift (bias).
