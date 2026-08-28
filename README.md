@@ -20,7 +20,7 @@ Developed GMAT, MATLAB, Simulink and Python (Orekit) simulations covering orbita
 *   **High-Fidelity Perturbation Analysis:** 
     *   Configured `DormandPrince853` integrators with complex force models (10x10 Gravity Harmonics, Harris-Priester Drag, SRP, Luni-Solar Third Body).
     *   Ran 30-day propagations isolating specific orbital dynamics: LEO altitude decay, SSO nodal regression (J2 drift), GEO East-West tesseral drift, and the locked apsidal line of critical-inclination Molniya orbits (Frozen Orbits).
-*   **SGP4 Propagation & Revisit Time:** 
+*   **SGP4 Propagation & Repeat Ground Track:** 
     *   Parsed real-world TLE data (CelesTrak) for analytical SGP4 propagation.
     *   Calculated exact repeating ground tracks (R revolutions in D days) compensating for J2 effects to extract longitudinal drift and equator crossing nodes.
 *   **Navigation & Orbit Determination (EKF):**
