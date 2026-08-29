@@ -22,11 +22,10 @@ Developed GMAT, MATLAB, Simulink and Python (Orekit) simulations covering orbita
     *   Ran 30-day propagations isolating specific orbital dynamics: LEO altitude decay, SSO nodal regression (J2 drift), GEO East-West tesseral drift, and the locked apsidal line of critical-inclination Molniya orbits (Frozen Orbits).
 *   **SGP4 Propagation & Repeat Ground Track:** 
     *   Parsed real-world TLE data (CelesTrak) for analytical SGP4 propagation.
-    *   Calculated exact repeating ground tracks (R revolutions in D days) compensating for J2 effects to extract longitudinal drift and equator crossing nodes.
+    *   Calculated exact repeating ground tracks (R revolutions in D days) compensating for J2 effects to extract longitudinal drift and equator crossing nodes, while evaluating track separation variations from the equator to high-latitude baselines to demonstrate physical footprint reduction driven by meridian convergence.
 *   **Navigation & Orbit Determination (EKF):**
     *   Generated high-fidelity truth trajectories and simulated black-box GNSS SPP-level PVT measurements (Gaussian noise injection).
-    *   Implemented an On-Board Computer (OBC) navigation model using Orekit's `KalmanEstimator` to fuse noisy sensor data with the dynamic model, analyzing normalized state vector residuals to validate filter convergence.
- 
+    *   Implemented an On-Board Computer (OBC) navigation model using Orekit's `KalmanEstimator` to fuse noisy sensor data with the dynamic model, demonstrating robust filter convergence and significant 3D RMSE reduction over raw GNSS data, despite highly degraded initial states.
 ### 3. ADCS & GNC Slew Maneuver Project (`ADCS_GNC_Project`)
 *   **Ideal Kinematics & Baseline:**
     *   Implemented a 3-DOF attitude dynamics and PD control baseline in Simulink using a quintic S-curve guidance profile for an off-nadir slew  within a 120-second window.
