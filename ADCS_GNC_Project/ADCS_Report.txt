@@ -111,8 +111,9 @@ Therefore, Reaction Wheels are the preferred primary actuator for the considered
 Future Developments (State Estimation): To transition from the current baseline to a flight software architecture, future improvements will integrate a Multiplicative Extended Kalman Filter (MEKF). 
 The filter fuses high-frequency gyroscope propagation (prediction) with absolute star tracker measurements (correction) to filter sensor noise, while dynamically estimating and removing real-time gyroscope drift (bias).
 
- If the GNC architecture is expanded to include a Multiplicative Extended Kalman Filter (MEKF) for sensor fusion (e.g., Star Tracker and Gyroscope), the attitude error cannot be computed using standard linear subtractions.
-Standard Kalman filters calculate the innovation (error) via direct subtraction (e = x_meas - x_pred). Applying this to quaternions violates the unit norm constraint, resulting in a state that no longer represents a valid physical rotation. To preserve geometric properties, the MEKF defines the error multiplicatively: q_meas = q_pred * delta_q
+If the GNC architecture is expanded to include a Multiplicative Extended Kalman Filter (MEKF) for sensor fusion (e.g., Star Tracker and Gyroscope), the attitude error cannot be computed using standard linear subtractions.
+Standard Kalman filters calculate the innovation (error) via direct subtraction (e = x_meas - x_pred). Applying this to quaternions violates the unit norm constraint, resulting in a state that no longer represents a valid physical rotation. 
+To preserve geometric properties, the MEKF defines the error multiplicatively: q_meas = q_pred * delta_q
 
 To isolate the error quaternion (delta_q), the equation is pre-multiplied by the inverse of the predicted quaternion. Since the inverse of a unit quaternion is its conjugate (q*), the error equation becomes:
 delta_q = (q_pred*) * q_meas
