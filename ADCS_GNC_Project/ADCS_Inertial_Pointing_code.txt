@@ -1,0 +1,129 @@
+% 7. FINAL TARGET ATTITUDE (INERTIAL POINTING)
+% =========================================================================
+% Target is defined directly in the Earth-Centered Inertial (ECI) frame.
+% 3-2-1 sequence: Right Ascension (Yaw), Declination (Pitch), Roll.
+% No composition with the orbital frame (LVLH) is required.
+% =========================================================================
+
+% 7.1 Target ECI Euler Angles
+ra_target   = deg2rad(45.0);   % Right Ascension [rad]
+dec_target  = deg2rad(-30.0);  % Declination [rad]
+roll_target = deg2rad(0.0);    % Spacecraft Roll [rad]
+
+cy_f = cos(ra_target   / 2);
+sy_f = sin(ra_target   / 2);
+cp_f = cos(dec_target  / 2);
+sp_f = sin(dec_target  / 2);
+cr_f = cos(roll_target / 2);
+sr_f = sin(roll_target / 2);
+
+% 7.2 Final absolute BODY-to-ECI quaternion (q_BI_final)
+% This is the exact target attitude in absolute space.
+q_final_expected = [ ...
+    cr_f*cp_f*cy_f + sr_f*sp_f*sy_f;
+    sr_f*cp_f*cy_f - cr_f*sp_f*sy_f;
+    cr_f*sp_f*cy_f + sr_f*cp_f*sy_f;
+    cr_f*cp_f*sy_f - sr_f*sp_f*cy_f ];
+
+q_final_expected = q_final_expected / norm(q_final_expected);
+
+
+%% ========================================================================
+% 7.3 FINAL REFERENCE ANGULAR VELOCITY
+% =========================================================================
+% At steady state, the spacecraft is fixed relative to the stars. 
+% Therefore, the absolute angular velocity is exactly zero.
+
+omega_final_expected = [0; 0; 0];
+
+
+%% ========================================================================
+% 7.4 KINEMATIC NOTE ON RELATIVE ANGULAR VELOCITY (For report/validation)
+% =========================================================================
+% Although omega_BI = 0 at steady state, the spacecraft will appear to 
+% rotate backwards when observed from the orbiting LVLH frame. 
+% The relative angular velocity would be:
+%   omega_rel = - C_BL * omega_LVLH
+% However, the PD controller operates on absolute errors, so this relative 
+% rotation is naturally handled and requires no direct computation.
+
+% =========================================================================
+% GUIDANCE & REFERENCE GENERATOR (INERTIAL POINTING)
+% =========================================================================
+% Purpose:
+%   Generate the desired absolute spacecraft attitude (q_ref) and 
+%   absolute angular velocity (omega_ref) for an inertial maneuver.
+% =========================================================================
+
+% -------------------------------------------------------------------------
+% 1. MANEUVER PARAMETERS
+% -------------------------------------------------------------------------
+t_start = 10.0;                         % [s]
+t_duration = 120.0;                     % [s]
+
+% Final target angles in ECI (Right Ascension, Declination, Roll)
+ra_target   = deg2rad(45.0);            % Yaw equivalent
+dec_target  = deg2rad(-30.0);           % Pitch equivalent
+roll_target = deg2rad(0.0);             % Roll equivalent
+
+% -------------------------------------------------------------------------
+% 2. QUINTIC S-CURVE PROFILE
+% -------------------------------------------------------------------------
+if t < t_start
+    alpha   = 0.0;
+    d_alpha = 0.0;
+elseif t <= (t_start + t_duration)
+    tau = (t - t_start) / t_duration;
+    alpha = 10*tau^3 - 15*tau^4 + 6*tau^5;
+    d_alpha = (30*tau^2 - 60*tau^3 + 30*tau^4) / t_duration;
+else
+    alpha   = 1.0;
+    d_alpha = 0.0;
+end
+
+% -------------------------------------------------------------------------
+% 3. CURRENT DESIRED INERTIAL EULER ANGLES
+% -------------------------------------------------------------------------
+ra_curr   = alpha * ra_target;
+dec_curr  = alpha * dec_target;
+roll_curr = alpha * roll_target;
+
+% -------------------------------------------------------------------------
+% 4. CURRENT ABSOLUTE TARGET QUATERNION (q_ref)
+% -------------------------------------------------------------------------
+% By feeding ECI angles into the standard trigonometric formulation,
+% the resulting quaternion is already the absolute Body-to-ECI attitude.
+% No composition with the orbital frame is required.
+
+cy = cos(ra_curr   * 0.5);
+sy = sin(ra_curr   * 0.5);
+cp = cos(dec_curr  * 0.5);
+sp = sin(dec_curr  * 0.5);
+cr = cos(roll_curr * 0.5);
+sr = sin(roll_curr * 0.5);
+
+q_ref = [ ...
+    cr*cp*cy + sr*sp*sy;
+    sr*cp*cy - cr*sp*sy;
+    cr*sp*cy + sr*cp*sy;
+    cr*cp*sy - sr*sp*cy ];
+
+% -------------------------------------------------------------------------
+% 5. CURRENT ABSOLUTE ANGULAR VELOCITY (omega_ref)
+% -------------------------------------------------------------------------
+% The derivatives of the commanded ECI angles (Euler rates).
+d_ra   = d_alpha * ra_target;
+d_dec  = d_alpha * dec_target;
+d_roll = d_alpha * roll_target;
+
+% Map the inertial Euler rates to the BODY frame using the 3-2-1 
+% kinematic transformation matrix. 
+% Since the target is fixed in ECI, this is ALREADY the absolute omega.
+% There is no orbital rate to add.
+
+omega_ref = [ ...
+    d_roll - sin(dec_curr)*d_ra;
+    cos(roll_curr)*d_dec + sin(roll_curr)*cos(dec_curr)*d_ra;
+   -sin(roll_curr)*d_dec + cos(roll_curr)*cos(dec_curr)*d_ra ];
+
+end
