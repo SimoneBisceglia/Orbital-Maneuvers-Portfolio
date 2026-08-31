@@ -20,7 +20,7 @@ R_E     = 6371.0;           % Earth's mean radius [km]
 h_orbit = 800.0;            % Orbit altitude [km]
 r_orbit = R_E + h_orbit;    % Orbital radius [km]
 omega_orb_mag = sqrt(mu_E / r_orbit^3);   % Circular orbital angular velocity [rad/s]
-omega_orb_LVLH = [0; -omega_orb_mag; 0];  % Expressed in LVLH
+omega_orb_LVLH = [0; -omega_orb_mag; 0];  % Expressed in LVLH coordinates
 
 %% ========================================================================
 % 3. SPACECRAFT RIGID-BODY PARAMETERS
@@ -55,7 +55,7 @@ q_init = q_init / norm(q_init);
 
 omega_rel_init = [0; 0; 0];
 
-% Matrice DCM iniziale con angoli interi (roll_init, pitch_init, yaw_init = 0)
+% Initial DCM matrix with full angles (roll_init, pitch_init, yaw_init = 0)
 C_BL_init = [ ...
     cp0*cy0, cp0*sy0, -sp0;
     sr0*sp0*cy0 - cr0*sy0, sr0*sp0*sy0 + cr0*cy0, sr0*cp0;
@@ -75,7 +75,7 @@ Kd = diag(diag(2 * zeta * I_tensor * omega_n));
 % =========================================================================
 roll_f  = deg2rad(30.0); pitch_f = deg2rad(45.0); yaw_f   = deg2rad(20.0);
 
-% 6.1 Quaternione di target BODY rispetto a LVLH (Mezzi angoli)
+% 6.1 Target BODY-to-LVLH quaternion (Half angles)
 cy_f = cos(yaw_f / 2);   sy_f = sin(yaw_f / 2);
 cp_f = cos(pitch_f / 2); sp_f = sin(pitch_f / 2);
 cr_f = cos(roll_f / 2);  sr_f = sin(roll_f / 2);
@@ -106,16 +106,14 @@ q_final_expected = q_final_expected / norm(q_final_expected);
 
 omega_rel_final = [0; 0; 0];
 
-% 6.2 Matrice DCM finale con ANGOLI INTERI (corretto!)
+% 6.2 Final DCM Matrix with Full Angles
 c_phi_f   = cos(roll_f);   s_phi_f   = sin(roll_f);
 c_theta_f = cos(pitch_f);  s_theta_f = sin(pitch_f);
 c_psi_f   = cos(yaw_f);    s_psi_f   = sin(yaw_f);
-
 C_BL_final = [ ...
     c_theta_f*c_psi_f,                                  c_theta_f*s_psi_f,                                 -s_theta_f;
     s_phi_f*s_theta_f*c_psi_f - c_phi_f*s_psi_f,     s_phi_f*s_theta_f*s_psi_f + c_phi_f*c_psi_f,     s_phi_f*c_theta_f;
     c_phi_f*s_theta_f*c_psi_f + s_phi_f*s_psi_f,     c_phi_f*s_theta_f*s_psi_f - s_phi_f*c_psi_f,     c_phi_f*c_theta_f ];
-
 omega_final_expected = C_BL_final * omega_orb_LVLH;
 
 %% ========================================================================
