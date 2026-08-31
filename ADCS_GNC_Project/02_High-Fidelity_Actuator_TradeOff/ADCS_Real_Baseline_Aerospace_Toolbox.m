@@ -86,7 +86,6 @@ C_IL_init = [X_LVLH_ECI, Y_LVLH_ECI, Z_LVLH_ECI];
 C_LI_init = C_IL_init.';
 
 % Extract the initial LVLH w.r.t ECI quaternion
-% (This automatically yields the desired [0.7071; 0; 0.7071; 0])
 q_LVLH_ECI_init = dcm2quat(C_LI_init).';
 q_LVLH_ECI_init = q_LVLH_ECI_init / norm(q_LVLH_ECI_init);
 
