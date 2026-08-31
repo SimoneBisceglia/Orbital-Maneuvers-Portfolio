@@ -108,20 +108,12 @@ For the investigated mission:
 
 Therefore, Reaction Wheels are the preferred primary actuator for the considered agile off-nadir maneuver, while MTQs and thrusters remain valuable as complementary actuators for other ADCS functions such as detumbling and momentum unloading.
 
-Future Developments (State Estimation): To transition from the current baseline to a flight software architecture, future improvements will integrate a Multiplicative Extended Kalman Filter (MEKF). 
-The filter fuses high-frequency gyroscope propagation (prediction) with absolute star tracker measurements (correction) to filter sensor noise, while dynamically estimating and removing real-time gyroscope drift (bias).
+Future Developments (State Estimation): MEKF Integration
 
-If the GNC architecture is expanded to include a Multiplicative Extended Kalman Filter (MEKF) for sensor fusion (e.g., Star Tracker and Gyroscope), the attitude error cannot be computed using standard linear subtractions.
-Standard Kalman filters calculate the innovation (error) via direct subtraction (e = x_meas - x_pred). Applying this to quaternions violates the unit norm constraint, resulting in a state that no longer represents a valid physical rotation. 
-To preserve geometric properties, the MEKF defines the error multiplicatively: q_meas = q_pred * delta_q
+To transition toward a flight software architecture, future improvements will integrate a Multiplicative Extended Kalman Filter (MEKF) for Star Tracker and Gyroscope sensor fusion. This will filter raw sensor noise and dynamically estimate and remove real-time gyroscope drift (bias).
 
-To isolate the error quaternion (delta_q), the equation is pre-multiplied by the inverse of the predicted quaternion. Since the inverse of a unit quaternion is its conjugate (q*), the error equation becomes:
-delta_q = (q_pred*) * q_meas
+Because standard linear subtraction (e = x_meas - x_pred) violates the quaternion unit norm constraint, the MEKF preserves geometric validity by computing the attitude error multiplicatively: delta_q = (q_pred*) * q_meas.
 
- * Dimensionality Reduction (4D to 3D)
-   The resulting error quaternion (delta_q) is a 4x1 vector. However, the system's covariance matrix and the gyroscope bias operate in a 3D space. Because the filter runs at a high sampling rate, the angular deviation between the prediction and the measurement is extremely small.
-Under the small-angle approximation, the scalar part of the error quaternion tends to 1, and the vector part (delta_q_vec) approximates half of the true angular error (delta_alpha): delta_q ~ [1; 0.5 * delta_alpha]
+Dimensionality Reduction (4D to 3D): The 4x1 error quaternion (delta_q) must be mapped to the 3D space of the system's covariance matrix and bias. Since the filter runs at high sampling rates, the angular deviation is extremely small. Using the small-angle approximation, the vector part (delta_q_vec) approximates half of the true angular error: delta_q ~ [1; 0.5 * delta_alpha].
 
- * Generating the Filter Innovation
-   The MEKF discards the redundant scalar component and extracts a purely 3D error vector in radians: delta_alpha = 2 * delta_q_vec
-This 3x1 vector (delta_alpha) serves as the physical innovation of the filter. It is then multiplied by the Kalman Gain matrix (K) to correct the predicted attitude quaternion and dynamically update the gyroscope bias estimation.
+Generating the Filter Innovation: The MEKF discards the redundant scalar component to extract a purely 3D physical innovation vector in radians: delta_alpha = 2 * delta_q_vec. This 3x1 vector is then multiplied by the Kalman Gain matrix (K) to correct the predicted attitude quaternion and update the gyroscope bias estimation.
