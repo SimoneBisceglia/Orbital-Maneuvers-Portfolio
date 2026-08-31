@@ -7,106 +7,104 @@ A high-fidelity attitude dynamics spacecraft simulator was developed to evaluate
 
 The mission consists of an off-nadir slew in a circular 800-km LEO orbit. The spacecraft transitions from a nadir-pointing attitude to:
 
-* Roll = 30 deg, Pitch = 45 deg, Yaw = 20 deg
+* Roll = 30 deg, Pitch = 45 deg, Yaw = 20 deg with respect to the LVLH frame.
 
-with respect to the LVLH frame.
+A quintic S-curve time law is applied to the commanded ZYX Euler angles over a 120-s maneuver interval, starting at t = 10 s and ending at t = 130 s. 
 
-A quintic S-curve time law is applied to the commanded ZYX Euler angles over a 120-s maneuver interval, starting at t = 10 s and ending at t = 130 s. The resulting Euler-angle rates are transformed into body-frame angular velocity and combined with the LVLH orbital rotation to generate the desired ECI-referenced attitude and angular velocity.
+The resulting Euler-angle rates are transformed into body-frame angular velocity and combined with the LVLH orbital rotation to generate the desired ECI-referenced attitude and angular velocity.
 
 The simulation includes aerodynamic drag, solar radiation pressure, gravity-gradient torques, star-tracker and gyroscope errors, and physical actuator limitations.
 
-The simulation horizon extends beyond the 120-s maneuver in order to evaluate post-maneuver settling and steady-state actuator activity.
+The simulation horizon extends beyond the 120-s maneuver up to 600 s in order to evaluate post-maneuver settling and steady-state actuator activity.
+
+---
 
 ## 2. Actuator Trade-Off Results
 
 ### 2.1 Reaction Wheels
 
-The reaction-wheel architecture provides the smoothest overall dynamic response.
+The reaction-wheel architecture provides the smoothest overall dynamic response and successfully meets the final target attitude by the end of the simulation.
 
-The angular velocity reaches approximately:
+The angular velocity reaches approximately: omega_max around 12.3 x 10^-3 rad/s,
 
-* omega_max around 13 x 10^-3 rad/s,
+indicating sufficient agility for the considered slew. The response is highly continuous, with no significant persistent oscillatory behavior visible in the simulated angular-rate response.
 
-indicating sufficient agility for the considered slew. The response is comparatively smooth, with no significant persistent oscillatory behavior visible in the simulated angular-rate response.
+The RW power profile is concentrated mainly during the active maneuver, exhibiting a distinct double-peak response that reaches a maximum of approximately: P_max around 0.425 W.
 
-The RW power profile is concentrated mainly during the active maneuver, with a peak of approximately:
-
-* P_max around 0.4 W.
-
-After the main slew, the power decreases substantially.
+After the main slew, the power decreases substantially to near-zero maintenance levels.
 
 **Assessment:** RW provides the most favorable combination of agility, continuous torque control, and smooth post-maneuver behavior among the three architectures evaluated. Formal verification of the 120-s requirement should be based on the attitude-error deadband at the end of the maneuver.
 
 ### 2.2 Cold Gas Thrusters
 
-The thruster architecture provides angular rates comparable to the reaction-wheel system, reaching approximately:
-
-* omega_max around 12 x 10^-3 rad/s.
+The thruster architecture provides angular rates comparable to the reaction-wheel system, reaching a discrete peak of approximately: omega_max around 11.1 x 10^-3 rad/s,
 
 Therefore, the thruster system has sufficient dynamic authority to execute a rapid slew and should not be classified as an inherently slow architecture.
 
-The main limitation is the discrete On/Off control behavior. The angular-velocity and attitude responses exhibit persistent oscillations and a clear limit-cycle after the main maneuver, indicating degraded settling and fine-pointing performance.
+The main limitation is the discrete On/Off control behavior. The angular-velocity and attitude responses exhibit persistent chattering and a clear limit-cycle after the main maneuver, indicating degraded settling and fine-pointing performance.
 
-Under the simulated sensing and control conditions, the high-frequency switching of the thrusters produces continuous actuator activity during the steady-state phase. This behavior can lead to unnecessary propellant expenditure.
+Under the simulated sensing and control conditions, the high-frequency switching of the thrusters produces continuous actuator activity during the steady-state phase, leading to highly inefficient propellant expenditure long after the slew is complete.
 
-**Assessment:** THR provides adequate agility but significantly poorer fine-pointing and settling behavior than RW for the implemented control architecture. It is therefore less suitable as the primary fine-pointing actuator for this maneuver.
+**Assessment:** THR provides adequate agility but significantly poorer fine-pointing and settling behavior than RW for the implemented control architecture. It is therefore less suitable as the primary fine-pointing actuator for this maneuver without the addition of a significant deadband filter.
 
 ### 2.3 Magnetorquers
 
-The magnetorquer architecture exhibits substantially lower angular-rate authority, with a peak of approximately:
+The magnetorquer architecture exhibits substantially lower angular-rate authority than initially estimated, with a peak of only approximately: omega_max around 3.6 x 10^-3 rad/s,
 
-* omega_max around 5 x 10^-3 rad/s.
+The corresponding attitude response is completely delayed. The required target attitude is not demonstrated within the 120-s maneuver interval, and the system fails to reach the steady-state target even by the end of the 600-s simulation.
 
-The corresponding attitude response is strongly delayed relative to the commanded maneuver, and the required target attitude is not demonstrated within the 120-s maneuver interval.
+The actuator power profile immediately saturates, remaining clipped at the maximum limit of: P_max around 22.5 W,
 
-The actuator power profile reaches the simulated clipped maximum of approximately:
-
-* P_max around 22.5 W,
-
-indicating that the actuator is operating at or near its modeled power limit over a substantial portion of the maneuver.
+indicating that the actuator is operating in deep saturation over the vast majority of the maneuver.
 
 Due to the fundamental magnetic torque relationship (cross product between magnetic dipole and local geomagnetic field), the actuator is intrinsically underactuated, since no torque can be generated parallel to the local magnetic field vector.
 
-**Assessment:** MTQs provide insufficient control authority for the considered agile, time-constrained slew. Their performance is therefore inferior to both RW and THR for this specific mission scenario.
+**Assessment:** MTQs provide severely insufficient control authority for the considered agile, time-constrained slew. Their performance is vastly inferior to both RW and THR for this specific mission scenario.
 
+---
 ## 3. Comparative Assessment
 
 | Parameter | Reaction Wheels | Cold Gas Thrusters | Magnetorquers |
 | --- | --- | --- | --- |
-| **Peak angular rate** | ~13 x 10^-3 rad/s | ~12 x 10^-3 rad/s | ~5 x 10^-3 rad/s |
+| **Peak angular rate** | ~12.3 x 10^-3 rad/s | ~11.1 x 10^-3 rad/s | ~3.6x 10^-3 rad/s |
 | **Slew agility** | High | High | Low |
 | **Control modulation** | Continuous | On/Off | Magnetic dipole command |
-| **Post-maneuver behavior** | Smooth | Limit-cycle / chattering | Delayed |
+| **Post-maneuver behavior** | Smooth | Limit-cycle / chattering | Highly Delayed / Unreached Target |
 | **Main limitation** | Momentum accumulation | Propellant consumption / switching | Limited torque authority |
 | **Suitability for this slew** | Best | Moderate | Poor |
+
 
 The results indicate that the three architectures are limited by different physical mechanisms:
 
 * **RW:** best dynamic and settling behavior
-* **THR:** adequate agility, poor fine-pointing
-* **MTQ:** insufficient authority for the required slew
+* **THR:** adequate agility, poor fine-pointing and inefficient steady-state propellant usage
+* **MTQ:** completely insufficient authority for the required slew, resulting in deep power saturation
 
-For the specific 800-km LEO off-nadir maneuver and the implemented PD-control architecture, the Reaction Wheel configuration provides the most favorable overall performance.
+For the specific 800-km LEO off-nadir maneuver and the implemented PD-control architecture, the Reaction Wheel configuration provides the only fully successful and efficient performance.
+
+---
 
 ## 4. Engineering Interpretation
 
-The results are consistent with the typical operational roles of the three actuator classes.
+The results are highly consistent with the typical operational roles of the three actuator classes.
 
 * **Reaction Wheels** are well suited to precision pointing and agile attitude maneuvers because they provide continuous, finely controllable torque without propellant consumption. Their principal long-duration limitation is momentum accumulation, which generally requires momentum unloading.
-* **Magnetorquers** are particularly useful for detumbling, safe-mode control, and momentum dumping. Their dependence on the geomagnetic field and intrinsic underactuation makes them less suitable for fast, unrestricted three-axis slews.
-* **Thrusters** provide high instantaneous control authority and can be useful for coarse attitude control, rapid maneuvers, and momentum unloading. However, their discrete actuation and finite propellant budget make them less attractive for continuous fine-pointing in the configuration investigated here.
+* **Magnetorquers** are particularly useful for detumbling, safe-mode control, and momentum dumping. Their dependence on the geomagnetic field and intrinsic underactuation makes them entirely unsuited for fast, unrestricted three-axis slews, driving the system into immediate and sustained power saturation.
+* **Thrusters** provide high instantaneous control authority and can be useful for coarse attitude control, rapid maneuvers, and momentum unloading. However, their discrete actuation and finite propellant budget make them highly inefficient for continuous fine-pointing in the configuration investigated here, as evidenced by the post-maneuver mass flow waste.
+
+---
 
 ## 5. Conclusion
 
-The high-fidelity simulations show that actuator selection strongly affects not only maneuver speed but also settling quality and resource usage.
+The high-fidelity simulations explicitly demonstrate that actuator selection strongly affects not only maneuver speed but also settling quality, resource usage, and overall mission feasibility.
 
 For the investigated mission:
 
-* RW provides the best overall attitude-control behavior, combining high agility with smooth regulation.
-* THR provides comparable slew authority but suffers from persistent limit-cycle behavior under the implemented On/Off control strategy.
-* MTQ is unable to provide sufficient control authority to demonstrate completion of the required maneuver within the 120-s window.
+* RW provides the best overall attitude-control behavior, combining required agility with perfectly smooth regulation.
+* THR provides comparable slew authority but suffers from severe persistent limit-cycle behavior and propellant waste under the implemented On/Off control strategy.
+* MTQ is unable to provide sufficient control authority, failing to complete the required maneuver within the 120-s window and failing to reach the final target even after 600 s.
 
-Therefore, Reaction Wheels are the preferred primary actuator for the considered agile off-nadir maneuver, while MTQs and thrusters remain valuable as complementary actuators for other ADCS functions such as detumbling and momentum unloading.
+Therefore, Reaction Wheels are the required primary actuator for the considered agile off-nadir maneuver, while MTQs and thrusters should remain strictly as complementary actuators for other ADCS functions such as detumbling, momentum unloading, or coarse control.
 
 Future Developments (State Estimation): MEKF Integration
 
@@ -114,6 +112,10 @@ To transition toward a flight software architecture, future improvements will in
 
 Because standard linear subtraction (e = x_meas - x_pred) violates the quaternion unit norm constraint, the MEKF preserves geometric validity by computing the attitude error multiplicatively: delta_q = (q_pred*) * q_meas.
 
-Dimensionality Reduction (4D to 3D): The 4x1 error quaternion (delta_q) must be mapped to the 3D space of the system's covariance matrix and bias. Since the filter runs at high sampling rates, the angular deviation is extremely small. Using the small-angle approximation, the vector part (delta_q_vec) approximates half of the true angular error: delta_q ~ [1; 0.5 * delta_alpha].
+Dimensionality Reduction (4D to 3D): The 4x1 error quaternion (delta_q) must be mapped to the 3D space of the system's covariance matrix and bias. 
 
-Generating the Filter Innovation: The MEKF discards the redundant scalar component to extract a purely 3D physical innovation vector in radians: delta_alpha = 2 * delta_q_vec. This 3x1 vector is then multiplied by the Kalman Gain matrix (K) to correct the predicted attitude quaternion and update the gyroscope bias estimation.
+Since the filter runs at high sampling rates, the angular deviation is extremely small. Using the small-angle approximation, the vector part (delta_q_vec) approximates half of the true angular error: delta_q ~ [1; 0.5 * delta_alpha].
+
+Generating the Filter Innovation: The MEKF discards the redundant scalar component to extract a purely 3D physical innovation vector in radians: delta_alpha = 2 * delta_q_vec. 
+
+This 3x1 vector is then multiplied by the Kalman Gain matrix (K) to correct the predicted attitude quaternion and update the gyroscope bias estimation.
