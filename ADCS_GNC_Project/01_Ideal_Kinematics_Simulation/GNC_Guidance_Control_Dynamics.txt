@@ -222,7 +222,6 @@ omega_ref = omega_rel + C_BL * omega_LVLH;
 end
 
 
-
 function torque_cmd = pd_controller(q_ref, omega_ref, q_curr, omega_curr, Kp, Kd)
 % =========================================================================
 % QUATERNION PD ATTITUDE CONTROLLER
@@ -255,13 +254,11 @@ function torque_cmd = pd_controller(q_ref, omega_ref, q_curr, omega_curr, Kp, Kd
 %
 % =========================================================================
 
-
 % -------------------------------------------------------------------------
 % 1. INITIALIZE OUTPUT
 % -------------------------------------------------------------------------
 
 torque_cmd = zeros(3,1);
-
 
 % -------------------------------------------------------------------------
 % 2. NORMALIZE QUATERNIONS
@@ -282,7 +279,6 @@ if q_ref_norm > 1e-12
     q_ref = q_ref / q_ref_norm;
 end
 
-
 % -------------------------------------------------------------------------
 % 3. CURRENT QUATERNION CONJUGATE
 % -------------------------------------------------------------------------
@@ -299,7 +295,6 @@ q_curr_conj = [ ...
     -q_curr(2);
     -q_curr(3);
     -q_curr(4) ];
-
 
 % -------------------------------------------------------------------------
 % 4. ATTITUDE ERROR QUATERNION
@@ -326,7 +321,6 @@ qr_w = q_ref(1);
 qr_x = q_ref(2);
 qr_y = q_ref(3);
 qr_z = q_ref(4);
-
 
 % Hamilton product:
 % q_err = q_curr_conj * q_ref
@@ -362,7 +356,6 @@ q_err_vec = [ ...
     q_err_y;
     q_err_z ];
 
-
 % -------------------------------------------------------------------------
 % 5. SHORTEST-ROTATION PATH
 % -------------------------------------------------------------------------
@@ -374,7 +367,6 @@ q_err_vec = [ ...
 if q_err_w < 0
     q_err_vec = -q_err_vec;
 end
-
 
 % -------------------------------------------------------------------------
 % 6. ANGULAR VELOCITY ERROR
@@ -403,7 +395,6 @@ delta_omega = omega_curr - omega_ref;
 torque_cmd = Kp * q_err_vec ...
            - Kd * delta_omega;
 
-
 % -------------------------------------------------------------------------
 % 8. OUTPUT
 % -------------------------------------------------------------------------
@@ -413,8 +404,8 @@ torque_cmd = Kp * q_err_vec ...
 
 end
 
-function [q_dot, omega_dot] = rigid_body_dynamics(torque, omega, q, I_tensor, I_inv)
 
+function [q_dot, omega_dot] = rigid_body_dynamics(torque, omega, q, I_tensor, I_inv)
 % =========================================================================
 % RIGID BODY ROTATIONAL DYNAMICS + QUATERNION KINEMATICS
 % =========================================================================
@@ -451,14 +442,12 @@ function [q_dot, omega_dot] = rigid_body_dynamics(torque, omega, q, I_tensor, I_
 %
 % =========================================================================
 
-
 % -------------------------------------------------------------------------
 % 1. INITIALIZE OUTPUTS
 % -------------------------------------------------------------------------
 
 q_dot     = zeros(4,1);
 omega_dot = zeros(3,1);
-
 
 % -------------------------------------------------------------------------
 % 2. NORMALIZE QUATERNION FOR KINEMATIC CALCULATION
@@ -477,7 +466,6 @@ else
     q_unit = [1; 0; 0; 0];
 end
 
-
 % -------------------------------------------------------------------------
 % 3. ANGULAR MOMENTUM
 % -------------------------------------------------------------------------
@@ -486,7 +474,6 @@ end
 %   H = I * omega
 
 H = I_tensor * omega;
-
 
 % -------------------------------------------------------------------------
 % 4. GYROSCOPIC CROSS PRODUCT
@@ -519,7 +506,6 @@ cross_omega_H = [ ...
 omega_dot = I_inv * ( ...
     torque - cross_omega_H );
 
-
 % -------------------------------------------------------------------------
 % 6. BODY ANGULAR RATES
 % -------------------------------------------------------------------------
@@ -530,7 +516,6 @@ omega_dot = I_inv * ( ...
 p = omega(1);
 q_rate = omega(2);
 r = omega(3);
-
 
 % -------------------------------------------------------------------------
 % 7. QUATERNION KINEMATICS
