@@ -44,6 +44,7 @@ function [torque_real, rw_power] = reaction_wheels_model(torque_cmd, rw_max_torq
     
 end
 
+    function [torque_real, mtq_power] = magnetorquer_model(torque_cmd, t, omega_orb_mag, mtq_max_dipole, mtq_power_W_per_Am2)
     % =====================================================================
     % MAGNETORQUER ACTUATOR MODEL
     % Implements the Cross-Product Control Law and physical limitations.
@@ -78,8 +79,9 @@ end
     
     % 5. POWER CONSUMPTION BUDGET [Watts]
     mtq_power = sum(abs(m_real)) * mtq_power_W_per_Am2;
-end function [torque_real, mass_flow_rate] = thrusters_model(torque_cmd, thruster_max_torque, thruster_arm, thruster_Isp, g0)
+end 
 
+    function [torque_real, mass_flow_rate] = thrusters_model(torque_cmd, thruster_max_torque, thruster_arm, thruster_Isp, g0)
     % =====================================================================
     % THRUSTER ACTUATOR MODEL (BANG-BANG CONTROL)
     % Simulates ON/OFF firing logic and propellant mass flow rate.
