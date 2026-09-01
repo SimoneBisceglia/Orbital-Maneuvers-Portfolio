@@ -1,0 +1,572 @@
+function [q_ref, omega_ref] = guidance_generator(t, omega_orb_mag)
+% =========================================================================
+% GUIDANCE & REFERENCE GENERATOR
+% =========================================================================
+% Purpose:
+%   Generate the desired spacecraft attitude and angular velocity.
+%
+% Mission:
+%   Smooth slew from nadir-pointing attitude to an off-nadir attitude.
+%
+% Reference frames:
+%   ECI  = Earth-Centered Inertial frame
+%   LVLH = Local Vertical Local Horizontal frame
+%   BODY = Spacecraft body frame
+%
+% Quaternion convention:
+%   q = [qw; qx; qy; qz]  (scalar first)
+%
+% Important convention:
+%   q_ref represents the desired BODY orientation with respect to ECI.
+%
+%   omega_ref is the desired angular velocity of BODY with respect
+%   to ECI, but EXPRESSED IN BODY COORDINATES.
+%
+% =========================================================================
+% -------------------------------------------------------------------------
+% 1. MANEUVER PARAMETERS
+% -------------------------------------------------------------------------
+% Time at which the maneuver starts
+t_start = 10.0;                         % [s]
+% Duration of the maneuver
+t_duration = 120.0;                     % [s]
+% Final desired attitude with respect to LVLH
+roll_target  = deg2rad(30.0);            % [rad]
+pitch_target = deg2rad(45.0);            % [rad]
+yaw_target   = deg2rad(20.0);            % [rad]
+% -------------------------------------------------------------------------
+% 2. QUINTIC S-CURVE MANEUVER PROFILE
+% -------------------------------------------------------------------------
+% alpha goes from 0 to 1.
+%
+% The quintic polynomial:
+%
+%   alpha = 10*tau^3 - 15*tau^4 + 6*tau^5
+%
+% provides:
+%   alpha(0) = 0
+%   alpha(1) = 1
+%   d_alpha(0) = 0
+%   d_alpha(1) = 0
+%
+% Therefore the maneuver starts and ends smoothly.
+if t < t_start
+    % -------------------------------------------------------------
+    % Phase 1: Initial attitude
+    % -------------------------------------------------------------
+    alpha   = 0.0;
+    d_alpha = 0.0;
+elseif t <= (t_start + t_duration)
+    % -------------------------------------------------------------
+    % Phase 2: Slew maneuver
+    % -------------------------------------------------------------
+    
+    % Normalized maneuver time
+    tau = (t - t_start) / t_duration;
+    % Quintic S-curve
+    alpha = 10*tau^3 - 15*tau^4 + 6*tau^5;
+    % Derivative of quintic profile
+    d_alpha = ...
+        (30*tau^2 - 60*tau^3 + 30*tau^4) / t_duration;
+else
+    % -------------------------------------------------------------
+    % Phase 3: Final attitude
+    % -------------------------------------------------------------
+    alpha   = 1.0;
+    d_alpha = 0.0;
+end
+% -------------------------------------------------------------------------
+% 3. CURRENT DESIRED EULER ANGLES
+% -------------------------------------------------------------------------
+% 3-2-1 / ZYX Euler sequence:
+%
+%   Roll  = phi
+%   Pitch = theta
+%   Yaw   = psi
+phi   = alpha * roll_target;
+theta = alpha * pitch_target;
+psi   = alpha * yaw_target;
+% -------------------------------------------------------------------------
+% 4. EULER ANGLE RATES
+% -------------------------------------------------------------------------
+% Derivatives of the commanded Euler angles.
+d_phi   = d_alpha * roll_target;
+d_theta = d_alpha * pitch_target;
+d_psi   = d_alpha * yaw_target;
+% -------------------------------------------------------------------------
+% 5. EULER RATES -> BODY ANGULAR VELOCITY (RIGOROUS 3-2-1 TRANSFORMATION)
+% -------------------------------------------------------------------------
+% IMPORTANT:
+% Euler angle time derivatives (d_phi, d_theta, d_psi) are NOT body rates.
+% They must be mapped into the spacecraft Body frame using the 3-2-1 kinematic matrix.
+%
+% omega_rel is the angular velocity of BODY relative to LVLH,
+% expressed in BODY coordinates [rad/s].
+omega_rel = [ ...
+    d_phi - sin(theta)*d_psi;
+    cos(phi)*d_theta + sin(phi)*cos(theta)*d_psi;
+   -sin(phi)*d_theta + cos(phi)*cos(theta)*d_psi ];
+% -------------------------------------------------------------------------
+% 6. EULER ANGLES -> RELATIVE QUATERNION
+% -------------------------------------------------------------------------
+% Quaternion describing BODY orientation relative to LVLH.
+%
+% Quaternion convention:
+%   q_BL = [qw; qx; qy; qz]
+%
+% Euler sequence:
+%   ZYX / 3-2-1
+cy = cos(psi * 0.5);
+sy = sin(psi * 0.5);
+cp = cos(theta * 0.5);
+sp = sin(theta * 0.5);
+cr = cos(phi * 0.5);
+sr = sin(phi * 0.5);
+% Quaternion BODY/LVLH
+q_BL = [ ...
+    cr*cp*cy + sr*sp*sy;
+    sr*cp*cy - cr*sp*sy;
+    cr*sp*cy + sr*cp*sy;
+    cr*cp*sy - sr*sp*cy ];
+% -------------------------------------------------------------------------
+% 7. INITIAL LVLH ORIENTATION WITH RESPECT TO ECI
+% -------------------------------------------------------------------------
+% Initial LVLH-to-ECI orientation.
+q_LI_init = [sqrt(2)/2;
+             0;
+             -sqrt(2)/2;
+             0];
+% -------------------------------------------------------------------------
+% 8. ORBITAL ROTATION
+% -------------------------------------------------------------------------
+% LVLH rotates with the orbit around its Y-axis.
+theta_orb = -omega_orb_mag * t;
+% Quaternion representing the orbital rotation around LVLH Y-axis
+q_orb_rot = [ ...
+    cos(theta_orb/2);
+    0;
+    sin(theta_orb/2);
+    0 ];
+% -------------------------------------------------------------------------
+% 9. CURRENT LVLH ORIENTATION WITH RESPECT TO ECI
+% -------------------------------------------------------------------------
+% Hamilton quaternion product:
+%   q_LI_curr = q_orb_rot * q_LI_init
+q_LI_curr = [ ...
+    q_orb_rot(1)*q_LI_init(1) ...
+        - q_orb_rot(2)*q_LI_init(2) ...
+        - q_orb_rot(3)*q_LI_init(3) ...
+        - q_orb_rot(4)*q_LI_init(4);
+    q_orb_rot(1)*q_LI_init(2) ...
+        + q_orb_rot(2)*q_LI_init(1) ...
+        + q_orb_rot(3)*q_LI_init(4) ...
+        - q_orb_rot(4)*q_LI_init(3);
+    q_orb_rot(1)*q_LI_init(3) ...
+        - q_orb_rot(2)*q_LI_init(4) ...
+        + q_orb_rot(3)*q_LI_init(1) ...
+        + q_orb_rot(4)*q_LI_init(2);
+    q_orb_rot(1)*q_LI_init(4) ...
+        + q_orb_rot(2)*q_LI_init(3) ...
+        - q_orb_rot(3)*q_LI_init(2) ...
+        + q_orb_rot(4)*q_LI_init(1) ];
+% -------------------------------------------------------------------------
+% 10. DESIRED ABSOLUTE QUATERNION
+% -------------------------------------------------------------------------
+% Composition:
+%   q_ref = q_BL * q_LI_curr
+% Gives the desired BODY attitude with respect to ECI.
+q_ref = [ ...
+    q_BL(1)*q_LI_curr(1) ...
+        - q_BL(2)*q_LI_curr(2) ...
+        - q_BL(3)*q_LI_curr(3) ...
+        - q_BL(4)*q_LI_curr(4);
+    q_BL(1)*q_LI_curr(2) ...
+        + q_BL(2)*q_LI_curr(1) ...
+        + q_BL(3)*q_LI_curr(4) ...
+        - q_BL(4)*q_LI_curr(3);
+    q_BL(1)*q_LI_curr(3) ...
+        - q_BL(2)*q_LI_curr(4) ...
+        + q_BL(3)*q_LI_curr(1) ...
+        + q_BL(4)*q_LI_curr(2);
+    q_BL(1)*q_LI_curr(4) ...
+        + q_BL(2)*q_LI_curr(3) ...
+        - q_BL(3)*q_LI_curr(2) ...
+        + q_BL(4)*q_LI_curr(1) ];
+% -------------------------------------------------------------------------
+% 11. DCM: LVLH -> BODY
+% -------------------------------------------------------------------------
+% Direction Cosine Matrix from LVLH coordinates to BODY coordinates.
+% IMPORTANT: Must use full Euler angles (phi, theta, psi), not half-angles
+
+c_phi = cos(phi);     s_phi = sin(phi);
+c_theta = cos(theta); s_theta = sin(theta);
+c_psi = cos(psi);     s_psi = sin(psi);
+
+C_BL = [ ...
+    c_theta*c_psi,                                  c_theta*s_psi,                                 -s_theta;
+    s_phi*s_theta*c_psi - c_phi*s_psi,              s_phi*s_theta*s_psi + c_phi*c_psi,              s_phi*c_theta;
+    c_phi*s_theta*c_psi + s_phi*s_psi,              c_phi*s_theta*s_psi - s_phi*c_psi,              c_phi*c_theta ];
+% -------------------------------------------------------------------------
+% 12. ORBITAL ANGULAR VELOCITY
+% -------------------------------------------------------------------------
+omega_LVLH = [ ...
+    0;
+   -omega_orb_mag;
+    0 ];
+% -------------------------------------------------------------------------
+% 13. DESIRED BODY ANGULAR VELOCITY
+% -------------------------------------------------------------------------
+% omega_ref = omega_body/LVLH (in body) + C_BL * omega_LVLH/ECI (in body)
+% IMPORTANT: omega_ref is expressed in BODY coordinates.
+omega_ref = omega_rel + C_BL * omega_LVLH;
+end
+
+
+
+function torque_cmd = pd_controller(q_ref, omega_ref, q_curr, omega_curr, Kp, Kd)
+% =========================================================================
+% QUATERNION PD ATTITUDE CONTROLLER
+% =========================================================================
+% Purpose:
+%   Compute the spacecraft control torque required to track the desired
+%   attitude and angular velocity.
+%
+% Inputs:
+%   q_ref      : Desired quaternion [qw; qx; qy; qz]
+%                BODY attitude with respect to ECI
+%
+%   omega_ref  : Desired angular velocity [p; q; r]
+%                expressed in BODY coordinates
+%
+%   q_curr     : Current quaternion [qw; qx; qy; qz]
+%                BODY attitude with respect to ECI
+%
+%   omega_curr : Current body angular velocity [p; q; r]
+%                expressed in BODY coordinates
+%
+%   Kp         : Proportional gain matrix
+%   Kd         : Derivative gain matrix
+%
+% Output:
+%   torque_cmd : Control torque [Tx; Ty; Tz] in BODY coordinates [Nm]
+%
+% Quaternion convention:
+%   Scalar first: [qw; qx; qy; qz]
+%
+% =========================================================================
+
+
+% -------------------------------------------------------------------------
+% 1. INITIALIZE OUTPUT
+% -------------------------------------------------------------------------
+
+torque_cmd = zeros(3,1);
+
+
+% -------------------------------------------------------------------------
+% 2. NORMALIZE QUATERNIONS
+% -------------------------------------------------------------------------
+% A valid attitude quaternion must have unit norm.
+%
+% Normalization also prevents numerical integration errors from
+% affecting the attitude error calculation.
+
+q_curr_norm = norm(q_curr);
+q_ref_norm  = norm(q_ref);
+
+if q_curr_norm > 1e-12
+    q_curr = q_curr / q_curr_norm;
+end
+
+if q_ref_norm > 1e-12
+    q_ref = q_ref / q_ref_norm;
+end
+
+
+% -------------------------------------------------------------------------
+% 3. CURRENT QUATERNION CONJUGATE
+% -------------------------------------------------------------------------
+% For a unit quaternion:
+%
+%   q_inverse = conjugate(q)
+%
+% Therefore:
+%
+%   q_curr_conj = [qw; -qx; -qy; -qz]
+
+q_curr_conj = [ ...
+     q_curr(1);
+    -q_curr(2);
+    -q_curr(3);
+    -q_curr(4) ];
+
+
+% -------------------------------------------------------------------------
+% 4. ATTITUDE ERROR QUATERNION
+% -------------------------------------------------------------------------
+% We calculate:
+%
+%   q_err = conjugate(q_curr) * q_ref
+%
+% With the present convention, the vector part of q_err represents
+% the rotation required to move the CURRENT attitude toward the
+% REFERENCE attitude, expressed in the current/body coordinates.
+%
+% This is convenient because the control torque is also expressed
+% in BODY coordinates.
+
+% Current quaternion
+qc_w = q_curr_conj(1);
+qc_x = q_curr_conj(2);
+qc_y = q_curr_conj(3);
+qc_z = q_curr_conj(4);
+
+% Reference quaternion
+qr_w = q_ref(1);
+qr_x = q_ref(2);
+qr_y = q_ref(3);
+qr_z = q_ref(4);
+
+
+% Hamilton product:
+% q_err = q_curr_conj * q_ref
+
+q_err_w = ...
+    qc_w*qr_w ...
+    - qc_x*qr_x ...
+    - qc_y*qr_y ...
+    - qc_z*qr_z;
+
+q_err_x = ...
+    qc_w*qr_x ...
+    + qc_x*qr_w ...
+    + qc_y*qr_z ...
+    - qc_z*qr_y;
+
+q_err_y = ...
+    qc_w*qr_y ...
+    - qc_x*qr_z ...
+    + qc_y*qr_w ...
+    + qc_z*qr_x;
+
+q_err_z = ...
+    qc_w*qr_z ...
+    + qc_x*qr_y ...
+    - qc_y*qr_x ...
+    + qc_z*qr_w;
+
+
+% Vector part of the attitude error
+q_err_vec = [ ...
+    q_err_x;
+    q_err_y;
+    q_err_z ];
+
+
+% -------------------------------------------------------------------------
+% 5. SHORTEST-ROTATION PATH
+% -------------------------------------------------------------------------
+% q and -q represent the same physical attitude.
+%
+% If the scalar part of the error quaternion is negative, flip the
+% vector part so that the controller follows the shortest rotation.
+
+if q_err_w < 0
+    q_err_vec = -q_err_vec;
+end
+
+
+% -------------------------------------------------------------------------
+% 6. ANGULAR VELOCITY ERROR
+% -------------------------------------------------------------------------
+% Both omega_curr and omega_ref are expressed in BODY coordinates.
+%
+% Therefore they can be directly subtracted.
+
+delta_omega = omega_curr - omega_ref;
+
+
+% -------------------------------------------------------------------------
+% 7. QUATERNION PD CONTROL LAW
+% -------------------------------------------------------------------------
+% Control law:
+%
+%   torque = Kp * q_error_vector
+%            - Kd * angular_velocity_error
+%
+% The positive proportional sign is consistent with the definition:
+%
+%   q_err = conjugate(q_curr) * q_ref
+%
+% A positive q_err vector indicates the direction toward the target.
+
+torque_cmd = Kp * q_err_vec ...
+           - Kd * delta_omega;
+
+
+% -------------------------------------------------------------------------
+% 8. OUTPUT
+% -------------------------------------------------------------------------
+% torque_cmd is expressed in BODY coordinates:
+%
+%   [Tx; Ty; Tz] [Nm]
+
+end
+
+function [q_dot, omega_dot] = rigid_body_dynamics(torque, omega, q, I_tensor, I_inv)
+
+% =========================================================================
+% RIGID BODY ROTATIONAL DYNAMICS + QUATERNION KINEMATICS
+% =========================================================================
+% Purpose:
+%   Simulate the rotational motion of the spacecraft.
+%
+% Inputs:
+%   torque   : Applied body torque [Tx; Ty; Tz] [Nm]
+%              expressed in BODY coordinates
+%
+%   omega    : Body angular velocity [p; q; r] [rad/s]
+%              expressed in BODY coordinates
+%
+%   q        : Attitude quaternion [qw; qx; qy; qz]
+%              BODY attitude with respect to ECI
+%
+%   I_tensor : Spacecraft inertia tensor [kg*m^2]
+%
+%   I_inv    : Inverse inertia tensor [1/(kg*m^2)]
+%
+% Outputs:
+%   q_dot    : Quaternion derivative
+%
+%   omega_dot: Body angular acceleration [rad/s^2]
+%
+% =========================================================================
+% Dynamic equation:
+%
+%   I * omega_dot + omega x (I*omega) = torque
+%
+% Therefore:
+%
+%   omega_dot = I^-1 * [torque - omega x (I*omega)]
+%
+% =========================================================================
+
+
+% -------------------------------------------------------------------------
+% 1. INITIALIZE OUTPUTS
+% -------------------------------------------------------------------------
+
+q_dot     = zeros(4,1);
+omega_dot = zeros(3,1);
+
+
+% -------------------------------------------------------------------------
+% 2. NORMALIZE QUATERNION FOR KINEMATIC CALCULATION
+% -------------------------------------------------------------------------
+% Numerical integration can cause a small drift in quaternion norm.
+%
+% We normalize the quaternion before calculating q_dot.
+% This does not change the physical attitude.
+
+q_norm = norm(q);
+
+if q_norm > 1e-12
+    q_unit = q / q_norm;
+else
+    % Safety fallback
+    q_unit = [1; 0; 0; 0];
+end
+
+
+% -------------------------------------------------------------------------
+% 3. ANGULAR MOMENTUM
+% -------------------------------------------------------------------------
+% Angular momentum:
+%
+%   H = I * omega
+
+H = I_tensor * omega;
+
+
+% -------------------------------------------------------------------------
+% 4. GYROSCOPIC CROSS PRODUCT
+% -------------------------------------------------------------------------
+% Calculate:
+%
+%   omega x H
+%
+% where:
+%
+%   H = I * omega
+
+cross_omega_H = [ ...
+    omega(2)*H(3) - omega(3)*H(2);
+    omega(3)*H(1) - omega(1)*H(3);
+    omega(1)*H(2) - omega(2)*H(1) ];
+
+
+% -------------------------------------------------------------------------
+% 5. EULER ROTATIONAL DYNAMICS
+% -------------------------------------------------------------------------
+% Equation:
+%
+%   I * omega_dot = torque - omega x (I*omega)
+%
+% Therefore:
+%
+%   omega_dot = I^-1 * [torque - omega x (I*omega)]
+
+omega_dot = I_inv * ( ...
+    torque - cross_omega_H );
+
+
+% -------------------------------------------------------------------------
+% 6. BODY ANGULAR RATES
+% -------------------------------------------------------------------------
+% The three components are:
+%
+%   omega = [p; q; r]
+
+p = omega(1);
+q_rate = omega(2);
+r = omega(3);
+
+
+% -------------------------------------------------------------------------
+% 7. QUATERNION KINEMATICS
+% -------------------------------------------------------------------------
+% Quaternion convention:
+%
+%   q = [qw; qx; qy; qz]
+%
+% with body angular velocity:
+%
+%   omega = [p; q; r]
+%
+% Quaternion differential equation:
+%
+%   q_dot = 0.5 * Omega(omega) * q
+%
+% where:
+%
+%       [ 0  -p  -q  -r ]
+%       [ p   0   r  -q ]
+% Omega=[ q  -r   0   p ]
+%       [ r   q  -p   0 ]
+
+Omega_mat = [ ...
+     0,     -p,      -q_rate, -r;
+     p,      0,       r,      -q_rate;
+     q_rate,-r,       0,       p;
+     r,      q_rate, -p,       0 ];
+
+
+% Quaternion derivative
+q_dot = 0.5 * Omega_mat * q_unit;
+
+
+% -------------------------------------------------------------------------
+% 8. END
+% -------------------------------------------------------------------------
+
+end
