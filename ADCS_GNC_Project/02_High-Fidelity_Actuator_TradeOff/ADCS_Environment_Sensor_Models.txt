@@ -1,0 +1,117 @@
+function torque_dist = environment_model(q_BI, t, omega_orb_mag, q_LVLH_ECI_init, I_tensor, mu_E, r_orbit, rho_atm, Cd, Area_drag, V_orb, cp_cg_offset_drag)
+    % =====================================================================
+    % ENVIRONMENTAL DISTURBANCES MODEL
+    % Calculates Gravity Gradient and Aerodynamic Drag torques in BODY frame.
+    % =====================================================================
+    
+    % 1. Calculate current LVLH to ECI quaternion (Orbit evolution)
+    theta_orb = -omega_orb_mag * t;
+    q_orb_rot = [cos(theta_orb/2); 0; sin(theta_orb/2); 0];
+    
+    % Hamilton product: q_LI_curr = q_orb_rot * q_LVLH_ECI_init
+    qw1 = q_orb_rot(1); qx1 = q_orb_rot(2); qy1 = q_orb_rot(3); qz1 = q_orb_rot(4);
+    qw2 = q_LVLH_ECI_init(1); qx2 = q_LVLH_ECI_init(2); qy2 = q_LVLH_ECI_init(3); qz2 = q_LVLH_ECI_init(4);
+    q_LI_curr = [ ...
+        qw1*qw2 - qx1*qx2 - qy1*qy2 - qz1*qz2;
+        qw1*qx2 + qx1*qw2 + qy1*qz2 - qz1*qy2;
+        qw1*qy2 - qx1*qz2 + qy1*qw2 + qz1*qx2;
+        qw1*qz2 + qx1*qy2 - qy1*qx2 + qz1*qw2 ];
+        
+    % 2. Calculate BODY to LVLH quaternion: q_BL = q_BI * q_LI_curr^(-1)
+    q_LI_conj = [q_LI_curr(1); -q_LI_curr(2); -q_LI_curr(3); -q_LI_curr(4)];
+    
+    qw1 = q_BI(1); qx1 = q_BI(2); qy1 = q_BI(3); qz1 = q_BI(4);
+    qw2 = q_LI_conj(1); qx2 = q_LI_conj(2); qy2 = q_LI_conj(3); qz2 = q_LI_conj(4);
+    q_BL = [ ...
+        qw1*qw2 - qx1*qx2 - qy1*qy2 - qz1*qz2;
+        qw1*qx2 + qx1*qw2 + qy1*qz2 - qz1*qy2;
+        qw1*qy2 - qx1*qz2 + qy1*qw2 + qz1*qx2;
+        qw1*qz2 + qx1*qy2 - qy1*qx2 + qz1*qw2 ];
+    q_BL = q_BL / norm(q_BL);
+    
+    % 3. DCM from LVLH to BODY
+    qw = q_BL(1); qx = q_BL(2); qy = q_BL(3); qz = q_BL(4);
+    C_BL = [ ...
+        1 - 2*(qy^2 + qz^2),     2*(qx*qy + qw*qz),       2*(qx*qz - qw*qy);
+        2*(qx*qy - qw*qz),       1 - 2*(qx^2 + qz^2),     2*(qy*qz + qw*qx);
+        2*(qx*qz + qw*qy),       2*(qy*qz - qw*qx),       1 - 2*(qx^2 + qy^2) ];
+        
+    % ---------------------------------------------------------------------
+    % A) GRAVITY GRADIENT TORQUE
+    % Nadir vector in LVLH is X-axis [1; 0; 0]
+    % ---------------------------------------------------------------------
+    u_nadir_LVLH = [1; 0; 0];
+    u_nadir_BODY = C_BL * u_nadir_LVLH;
+    
+    % tau_gg = 3 * (mu/r^3) * (u_nadir x I * u_nadir)
+    mu_m3 = mu_E * 1e9;         % Convert km^3/s^2 to m^3/s^2
+    r_m = r_orbit * 1e3;        % Convert km to m
+    tau_gg = 3 * (mu_m3) / (r_m^3) * cross(u_nadir_BODY, I_tensor * u_nadir_BODY);
+    
+    % ---------------------------------------------------------------------
+    % B) AERODYNAMIC DRAG TORQUE
+    % Satellite moves along LVLH +Y. So the incoming wind is -Y [0; -1; 0]
+    % ---------------------------------------------------------------------
+    u_wind_LVLH = [0; -1; 0];
+    u_wind_BODY = C_BL * u_wind_LVLH;
+    
+    % F_drag = 0.5 * rho * Cd * A * V^2 * u_wind
+    F_drag_mag = 0.5 * rho_atm * Cd * Area_drag * V_orb^2;
+    F_drag_BODY = F_drag_mag * u_wind_BODY;
+    
+    % tau_drag = offset x F_drag
+    tau_drag = cross(cp_cg_offset_drag, F_drag_BODY);
+    
+    % ---------------------------------------------------------------------
+    % TOTAL DISTURBANCE TORQUE
+    % ---------------------------------------------------------------------
+    torque_dist = tau_gg + tau_drag;
+end
+
+function [q_meas, omega_meas] = sensor_model(q_true, omega_true, st_noise_sigma, gyro_noise_sigma, gyro_bias)
+    % =====================================================================
+    % SENSOR MODEL (STAR TRACKER & GYROSCOPES)
+    % Inputs:
+    %   q_true           : 4x1 True attitude quaternion from dynamics
+    %   omega_true       : 3x1 True angular velocity from dynamics [rad/s]
+    %   st_noise_sigma   : Scalar, Star Tracker noise standard deviation [rad]
+    %   gyro_noise_sigma : Scalar, Gyroscope noise standard deviation [rad/s]
+    %   gyro_bias        : 3x1 Gyroscope constant thermal drift [rad/s]
+    %
+    % Outputs:
+    %   q_meas           : 4x1 Measured (noisy) quaternion
+    %   omega_meas       : 3x1 Measured (noisy) angular velocity
+    % =====================================================================
+
+    % 1. GYROSCOPE MODEL (Angular Velocity)
+    % Equation: w_meas = w_true + bias + noise
+    % We use randn(3,1) to generate normally distributed Gaussian white noise.
+    gyro_noise = gyro_noise_sigma * randn(3, 1);
+    omega_meas = omega_true + gyro_bias + gyro_noise;
+
+    % 2. STAR TRACKER MODEL (Attitude Quaternion)
+    % Instead of adding noise directly to quaternion components (which breaks 
+    % its properties), we generate a small random error rotation vector.
+    
+    % Small angle error on 3 axes [rad]
+    err_angles = st_noise_sigma * randn(3, 1);
+    
+    % Convert small angle error to an error quaternion (Small Angle Approximation)
+    % q_err = [1; theta_x/2; theta_y/2; theta_z/2]
+    q_err = [1; 0.5 * err_angles(1); 0.5 * err_angles(2); 0.5 * err_angles(3)];
+    q_err = q_err / norm(q_err); % Normalize just to be safe
+    
+    % Apply the error rotation to the true quaternion (Hamilton product)
+    % q_meas = q_true * q_err
+    qw = q_true(1); qx = q_true(2); qy = q_true(3); qz = q_true(4);
+    ew = q_err(1);  ex = q_err(2);  ey = q_err(3);  ez = q_err(4);
+    
+    q_meas = [ ...
+        qw*ew - qx*ex - qy*ey - qz*ez;
+        qw*ex + qx*ew + qy*ez - qz*ey;
+        qw*ey - qx*ez + qy*ew + qz*ex;
+        qw*ez + qx*ey - qy*ex + qz*ew ];
+        
+    % Final normalization to ensure the controller receives a valid unit quaternion
+    q_meas = q_meas / norm(q_meas);
+end
