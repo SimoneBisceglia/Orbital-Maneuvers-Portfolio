@@ -1,5 +1,5 @@
 % =========================================================================
-% ADCS / GNC SIMULATION: MASTER INITIALIZATION SCRIPT
+% ADCS / GNC SIMULATION: MASTER INITIALIZATION SCRIPT 
 % IDEAL BASELINE - NADIR TO OFF-NADIR SLEW
 %
 % Quaternion convention:
