@@ -42,24 +42,25 @@ q_Body_LVLH_init = [ ...
     cr0*sp0*cy0 + sr0*cp0*sy0;
     cr0*cp0*sy0 - sr0*sp0*cy0 ];
 q_Body_LVLH_init = q_Body_LVLH_init / norm(q_Body_LVLH_init);
-
 q_LVLH_ECI_init = [sqrt(2)/2; 0; -sqrt(2)/2; 0];
 q_LVLH_ECI_init = q_LVLH_ECI_init / norm(q_LVLH_ECI_init);
 
-q_init = [ ...
-    q_Body_LVLH_init(1)*q_LVLH_ECI_init(1) - q_Body_LVLH_init(2)*q_LVLH_ECI_init(2) - q_Body_LVLH_init(3)*q_LVLH_ECI_init(3) - q_Body_LVLH_init(4)*q_LVLH_ECI_init(4);
-    q_Body_LVLH_init(1)*q_LVLH_ECI_init(2) + q_Body_LVLH_init(2)*q_LVLH_ECI_init(1) + q_Body_LVLH_init(3)*q_LVLH_ECI_init(4) - q_Body_LVLH_init(4)*q_LVLH_ECI_init(3);
-    q_Body_LVLH_init(1)*q_LVLH_ECI_init(3) - q_Body_LVLH_init(2)*q_LVLH_ECI_init(4) + q_Body_LVLH_init(3)*q_LVLH_ECI_init(1) + q_Body_LVLH_init(4)*q_LVLH_ECI_init(2);
-    q_Body_LVLH_init(1)*q_LVLH_ECI_init(4) + q_Body_LVLH_init(2)*q_LVLH_ECI_init(3) - q_Body_LVLH_init(3)*q_LVLH_ECI_init(2) + q_Body_LVLH_init(4)*q_LVLH_ECI_init(1) ];
+% 4.4 Initial absolute quaternion q_BI_init (Using quatmultiply)
+q_init = quatmultiply(q_Body_LVLH_init.', q_LVLH_ECI_init.').';
 q_init = q_init / norm(q_init);
 
 omega_rel_init = [0; 0; 0];
 
 % Initial DCM matrix with full angles (roll_init, pitch_init, yaw_init = 0)
+cy0_mat = cos(yaw_init);   sy0_mat = sin(yaw_init);
+cp0_mat = cos(pitch_init); sp0_mat = sin(pitch_init);
+cr0_mat = cos(roll_init);  sr0_mat = sin(roll_init);
+
 C_BL_init = [ ...
-    cp0*cy0, cp0*sy0, -sp0;
-    sr0*sp0*cy0 - cr0*sy0, sr0*sp0*sy0 + cr0*cy0, sr0*cp0;
-    cr0*sp0*cy0 + sr0*sy0, cr0*sp0*sy0 - sr0*cy0, cr0*cp0 ];
+    cp0_mat*cy0_mat,                                   cp0_mat*sy0_mat,                                  -sp0_mat;
+    sr0_mat*sp0_mat*cy0_mat - cr0_mat*sy0_mat,         sr0_mat*sp0_mat*sy0_mat + cr0_mat*cy0_mat,         sr0_mat*cp0_mat;
+    cr0_mat*sp0_mat*cy0_mat + sr0_mat*sy0_mat,         cr0_mat*sp0_mat*sy0_mat - sr0_mat*cy0_mat,         cr0_mat*cp0_mat ];
+
 omega_init = C_BL_init * omega_orb_LVLH;
 
 %% ========================================================================
@@ -85,23 +86,16 @@ q_Body_LVLH_final = [ ...
     cr_f*sp_f*cy_f + sr_f*cp_f*sy_f;
     cr_f*cp_f*sy_f - sr_f*sp_f*cy_f ];
 q_Body_LVLH_final = q_Body_LVLH_final / norm(q_Body_LVLH_final);
-
 theta_orb_final = -omega_orb_mag * T_sim;
 q_orb_rot_final = [cos(theta_orb_final/2); 0; sin(theta_orb_final/2); 0];
 q_orb_rot_final = q_orb_rot_final / norm(q_orb_rot_final);
 
-q_LI_final = [ ...
-    q_orb_rot_final(1)*q_LVLH_ECI_init(1) - q_orb_rot_final(2)*q_LVLH_ECI_init(2) - q_orb_rot_final(3)*q_LVLH_ECI_init(3) - q_orb_rot_final(4)*q_LVLH_ECI_init(4);
-    q_orb_rot_final(1)*q_LVLH_ECI_init(2) + q_orb_rot_final(2)*q_LVLH_ECI_init(1) + q_orb_rot_final(3)*q_LVLH_ECI_init(4) - q_orb_rot_final(4)*q_LVLH_ECI_init(3);
-    q_orb_rot_final(1)*q_LVLH_ECI_init(3) - q_orb_rot_final(2)*q_LVLH_ECI_init(4) + q_orb_rot_final(3)*q_LVLH_ECI_init(1) + q_orb_rot_final(4)*q_LVLH_ECI_init(2);
-    q_orb_rot_final(1)*q_LVLH_ECI_init(4) + q_orb_rot_final(2)*q_LVLH_ECI_init(3) - q_orb_rot_final(3)*q_LVLH_ECI_init(2) + q_orb_rot_final(4)*q_LVLH_ECI_init(1) ];
+% Using quatmultiply for orbital rotation
+q_LI_final = quatmultiply(q_orb_rot_final.', q_LVLH_ECI_init.').';
 q_LI_final = q_LI_final / norm(q_LI_final);
 
-q_final_expected = [ ...
-    q_Body_LVLH_final(1)*q_LI_final(1) - q_Body_LVLH_final(2)*q_LI_final(2) - q_Body_LVLH_final(3)*q_LI_final(3) - q_Body_LVLH_final(4)*q_LI_final(4);
-    q_Body_LVLH_final(1)*q_LI_final(2) + q_Body_LVLH_final(2)*q_LI_final(1) + q_Body_LVLH_final(3)*q_LI_final(4) - q_Body_LVLH_final(4)*q_LI_final(3);
-    q_Body_LVLH_final(1)*q_LI_final(3) - q_Body_LVLH_final(2)*q_LI_final(4) + q_Body_LVLH_final(3)*q_LI_final(1) + q_Body_LVLH_final(4)*q_LI_final(2);
-    q_Body_LVLH_final(1)*q_LI_final(4) + q_Body_LVLH_final(2)*q_LI_final(3) - q_Body_LVLH_final(3)*q_LI_final(2) + q_Body_LVLH_final(4)*q_LI_final(1) ];
+% Using quatmultiply for final expected absolute quaternion
+q_final_expected = quatmultiply(q_Body_LVLH_final.', q_LI_final.').';
 q_final_expected = q_final_expected / norm(q_final_expected);
 
 omega_rel_final = [0; 0; 0];
@@ -114,6 +108,7 @@ C_BL_final = [ ...
     c_theta_f*c_psi_f,                                  c_theta_f*s_psi_f,                                 -s_theta_f;
     s_phi_f*s_theta_f*c_psi_f - c_phi_f*s_psi_f,     s_phi_f*s_theta_f*s_psi_f + c_phi_f*c_psi_f,     s_phi_f*c_theta_f;
     c_phi_f*s_theta_f*c_psi_f + s_phi_f*s_psi_f,     c_phi_f*s_theta_f*s_psi_f - s_phi_f*c_psi_f,     c_phi_f*c_theta_f ];
+
 omega_final_expected = C_BL_final * omega_orb_LVLH;
 
 %% ========================================================================
