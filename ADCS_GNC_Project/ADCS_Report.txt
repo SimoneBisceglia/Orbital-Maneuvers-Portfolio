@@ -105,17 +105,3 @@ For the investigated mission:
 * MTQ is unable to provide sufficient control authority, failing to complete the required maneuver within the 120-s window and failing to reach the final target even after 600 s.
 
 Therefore, Reaction Wheels are the required primary actuator for the considered agile off-nadir maneuver, while MTQs and thrusters should remain strictly as complementary actuators for other ADCS functions such as detumbling, momentum unloading, or coarse control.
-
-Future Developments (State Estimation): MEKF Integration
-
-To transition toward a flight software architecture, future improvements will integrate a Multiplicative Extended Kalman Filter (MEKF) for Star Tracker and Gyroscope sensor fusion. This will filter raw sensor noise and dynamically estimate and remove real-time gyroscope drift (bias).
-
-Because standard linear subtraction (e = x_meas - x_pred) violates the quaternion unit norm constraint, the MEKF preserves geometric validity by computing the attitude error multiplicatively: delta_q = (q_pred*) * q_meas.
-
-Dimensionality Reduction (4D to 3D): The 4x1 error quaternion (delta_q) must be mapped to the 3D space of the system's covariance matrix and bias. 
-
-Since the filter runs at high sampling rates, the angular deviation is extremely small. Using the small-angle approximation, the vector part (delta_q_vec) approximates half of the true angular error: delta_q ~ [1; 0.5 * delta_alpha].
-
-Generating the Filter Innovation: The MEKF discards the redundant scalar component to extract a purely 3D physical innovation vector in radians: delta_alpha = 2 * delta_q_vec. 
-
-This 3x1 vector is then multiplied by the Kalman Gain matrix (K) to correct the predicted attitude quaternion and update the gyroscope bias estimation.
