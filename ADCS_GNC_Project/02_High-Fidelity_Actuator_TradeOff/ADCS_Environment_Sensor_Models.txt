@@ -38,9 +38,9 @@ function torque_dist = environment_model(q_BI, t, omega_orb_mag, q_LVLH_ECI_init
         
     % ---------------------------------------------------------------------
     % A) GRAVITY GRADIENT TORQUE
-    % Nadir vector in LVLH is X-axis [1; 0; 0]
+    % Nadir vector in LVLH is Z-axis [0; 0; 1]
     % ---------------------------------------------------------------------
-    u_nadir_LVLH = [1; 0; 0];
+    u_nadir_LVLH = [0; 0; 1];
     u_nadir_BODY = C_BL * u_nadir_LVLH;
     
     % tau_gg = 3 * (mu/r^3) * (u_nadir x I * u_nadir)
@@ -50,9 +50,9 @@ function torque_dist = environment_model(q_BI, t, omega_orb_mag, q_LVLH_ECI_init
     
     % ---------------------------------------------------------------------
     % B) AERODYNAMIC DRAG TORQUE
-    % Satellite moves along LVLH +Y. So the incoming wind is -Y [0; -1; 0]
+    % Satellite moves along LVLH +X. So the incoming wind is -X [-1; 0; 0]
     % ---------------------------------------------------------------------
-    u_wind_LVLH = [0; -1; 0];
+    u_wind_LVLH = [-1; 0; 0];
     u_wind_BODY = C_BL * u_wind_LVLH;
     
     % F_drag = 0.5 * rho * Cd * A * V^2 * u_wind
