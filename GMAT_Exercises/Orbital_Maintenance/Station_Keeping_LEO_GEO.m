@@ -19,7 +19,7 @@ delta_a_tol = 5;
 delta_a_tot = 2 * delta_a_tol;
 
 % Approximated Hohmann transfer
-dV_drag_tot = V_nom_leo * (delta_a_tot / a_nom_leo);
+dV_drag_tot = V_nom_leo * (delta_a_tot / (2*a_nom_leo));
 dV_drag_1 = dV_drag_tot / 2; % Tangential (V) to raise apogee
 dV_drag_2 = dV_drag_tot / 2; % Tangential (V) to circularize
 
