@@ -5,7 +5,7 @@ Developed GMAT, MATLAB, Simulink and Python (Orekit) simulations covering orbita
 ## 📁 Project Structure
 
 ### 1. GMAT & MATLAB Exercises (`GMAT_Exercises`)
-*   **Orbital Transfers & Trajectory Design:** Modeled Hohmann vs. Bi-Elliptic transfers, targeted co-elliptic rendezvous sequences, and solved complex 2-DOF numerical targeting for Earth-Moon patched conics and narrow atmospheric re-entry corridors.
+*   **Orbital Transfers & Trajectory Design:** Modeled Hohmann vs. Bi-Elliptic transfers, targeted co-elliptic rendezvous sequences, and solved 2-DOF numerical targeting for Earth-Moon patched conics and narrow atmospheric re-entry corridors.
 *   **Maneuver Optimization:** Evaluated 1-Impulse vs. 3-Impulse plane change strategies (finding global Delta-V minimums) and implemented J2 time-of-flight drift compensation.
 *   **Operational Orbits & Station Keeping:** 
     *   Analyzed repeating ground tracks and constant LST for SSOs, and designed coverage configurations for HEO (Molniya) and GEO constellations.
