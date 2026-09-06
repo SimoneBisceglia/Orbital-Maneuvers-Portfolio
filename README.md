@@ -31,7 +31,7 @@ Developed GMAT, MATLAB, Simulink and Python (Orekit) simulations covering orbita
     *   Implemented a 3-DOF attitude dynamics and PD control baseline in Simulink using a quintic S-curve guidance profile for an off-nadir slew  within a 120-second window.
     *   Documentation includes the top-level architecture schema illustrating the ideal feedback loop.
 *   **High-Fidelity Actuator Trade-Off:** 
-    *   Extended the model to evaluate system robustness under environmental disturbances (aerodynamic drag, solar radiation pressure, gravity gradient) and navigation sensor errors (Star Tracker and Gyroscope noise).
+    *   Extended the model to evaluate system robustness under environmental disturbances (aerodynamic drag, gravity gradient) and navigation sensor errors (Star Tracker and Gyroscope noise).
     *   Conducted a comparative performance analysis across three physical actuator architectures implemented in Simulink: Reaction Wheels (RW), Magnetorquers (MTQ) and Thrusters (THR).
     *   Results & Documentation: High-resolution plots document the dynamic behavior, power profiles, and failure modes.
     *  *Note:* The exported images present smoothed curves for visual clarity; un-decimated high-frequency sensor noise and raw dynamic states remain fully modeled within the underlying Simulink block diagrams and MATLAB scripts.
