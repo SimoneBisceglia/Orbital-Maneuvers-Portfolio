@@ -33,7 +33,7 @@ The RW power profile is concentrated mainly during the active maneuver, exhibiti
 
 After the main slew, the power decreases substantially to near-zero maintenance levels.
 
-**Assessment:** RW provides the most favorable combination of agility, continuous torque control, and smooth post-maneuver behavior among the three architectures evaluated. Formal verification of the 120-s requirement should be based on the attitude-error deadband at the end of the maneuver.
+**Assessment:** RW provides the most favorable combination of agility, continuous torque control, and smooth post-maneuver behavior among the three architectures evaluated.
 
 ### 2.2 Cold Gas Thrusters
 
@@ -73,35 +73,20 @@ Due to the fundamental magnetic torque relationship (cross product between magne
 | **Main limitation** | Momentum accumulation | Propellant consumption / switching | Limited torque authority |
 | **Suitability for this slew** | Best | Moderate | Poor |
 
-
 The results indicate that the three architectures are limited by different physical mechanisms:
 
-* **RW:** best dynamic and settling behavior
-* **THR:** adequate agility, poor fine-pointing and inefficient steady-state propellant usage
-* **MTQ:** completely insufficient authority for the required slew, resulting in deep power saturation
-
-For the specific 800-km LEO off-nadir maneuver and the implemented PD-control architecture, the Reaction Wheel configuration provides the only fully successful and efficient performance.
+* **RW:** best dynamic and settling behavior.
+* **THR:** adequate agility, poor fine-pointing and inefficient steady-state propellant usage.
+* **MTQ:** completely insufficient authority for the required slew, resulting in deep power saturation.
 
 ---
-
-## 4. Engineering Interpretation
+## 4. Engineering Interpretation & Conclusions
 
 The results are highly consistent with the typical operational roles of the three actuator classes.
 
 * **Reaction Wheels** are well suited to precision pointing and agile attitude maneuvers because they provide continuous, finely controllable torque without propellant consumption. Their principal long-duration limitation is momentum accumulation, which generally requires momentum unloading.
+
 * **Magnetorquers** are particularly useful for detumbling, safe-mode control, and momentum dumping. Their dependence on the geomagnetic field and intrinsic underactuation makes them entirely unsuited for fast, unrestricted three-axis slews, driving the system into immediate and sustained power saturation.
+
 * **Thrusters** provide high instantaneous control authority and can be useful for coarse attitude control, rapid maneuvers, and momentum unloading. However, their discrete actuation and finite propellant budget make them highly inefficient for continuous fine-pointing in the configuration investigated here, as evidenced by the post-maneuver mass flow waste.
-
 ---
-
-## 5. Conclusion
-
-The high-fidelity simulations explicitly demonstrate that actuator selection strongly affects not only maneuver speed but also settling quality, resource usage, and overall mission feasibility.
-
-For the investigated mission:
-
-* RW provides the best overall attitude-control behavior, combining required agility with perfectly smooth regulation.
-* THR provides comparable slew authority but suffers from severe persistent limit-cycle behavior and propellant waste under the implemented On/Off control strategy.
-* MTQ is unable to provide sufficient control authority, failing to complete the required maneuver within the 120-s window and failing to reach the final target even after 600 s.
-
-Therefore, Reaction Wheels are the required primary actuator for the considered agile off-nadir maneuver, while MTQs and thrusters should remain strictly as complementary actuators for other ADCS functions such as detumbling, momentum unloading, or coarse control.
