@@ -1,0 +1,63 @@
+ % 1. Extraction of the final simulated quaternion (from timeseries)
+if exist('out', 'var') && isprop(out, 'q_out')
+    % If Simulink packed everything into the 'out' object
+    q_data = out.q_out.Data;
+elseif exist('q_out', 'var')
+    % If Simulink saved it directly in the base workspace
+    q_data = q_out.Data;
+else
+    error('Cannot find the q_out variable. Make sure you have run the simulation.');
+end
+
+% 2. Extraction of the last time step (t = 600s)
+% Timeseries can save as [N x 4] or [1 x 4 x N]
+if ndims(q_data) == 3
+    q_sim_final = q_data(:, :, end); 
+else
+    q_sim_final = q_data(end, :); 
+end
+
+% 3. Mathematical safety: force both to column vectors
+q_sim_final = q_sim_final(:);
+q_final_expected = q_final_expected(:);
+
+% --- GNC/ADCS ADDITIONS ---
+
+% 4a. Double Cover handling (sign alignment)
+% If the dot product is negative, we are comparing q with -q.
+if dot(q_sim_final, q_final_expected) < 0
+    q_sim_final = -q_sim_final; % Flip the sign for numerical consistency
+end
+
+% 4b. Error calculation (component-by-component residual)
+delta_q = q_sim_final - q_final_expected;
+
+% 4c. Calculation of the true physical angular error (in degrees)
+% Ensure the dot product does not exceed 1 due to machine precision issues
+dot_prod = min(abs(dot(q_sim_final, q_final_expected)), 1.0);
+angular_error_deg = 2 * acos(dot_prod) * (180/pi);
+
+% 5. Formatted console output
+disp('==============================================================');
+disp('      FINAL QUATERNION COMPARISON: SIMULATED vs TARGET');
+disp('==============================================================');
+fprintf('Component q1 | Target: %8.4f | Simulated: %8.4f | Error: %8.4f\n', q_final_expected(1), q_sim_final(1), delta_q(1));
+fprintf('Component q2 | Target: %8.4f | Simulated: %8.4f | Error: %8.4f\n', q_final_expected(2), q_sim_final(2), delta_q(2));
+fprintf('Component q3 | Target: %8.4f | Simulated: %8.4f | Error: %8.4f\n', q_final_expected(3), q_sim_final(3), delta_q(3));
+fprintf('Component q4 | Target: %8.4f | Simulated: %8.4f | Error: %8.4f\n', q_final_expected(4), q_sim_final(4), delta_q(4));
+disp('--------------------------------------------------------------');
+fprintf('MAXIMUM ABSOLUTE ERROR (Residual)  = %8.4e\n', max(abs(delta_q)));
+fprintf('TRUE ANGULAR ERROR (Physical)      = %8.4e deg\n', angular_error_deg);
+disp('==============================================================');
+
+==============================================================
+      FINAL QUATERNION COMPARISON: SIMULATED vs TARGET
+==============================================================
+Component q1 | Target:   0.7695 | Simulated:   0.7717 | Error:   0.0021
+Component q2 | Target:   0.1292 | Simulated:   0.1223 | Error:  -0.0070
+Component q3 | Target:  -0.6125 | Simulated:  -0.6116 | Error:   0.0009
+Component q4 | Target:  -0.1263 | Simulated:  -0.1247 | Error:   0.0016
+--------------------------------------------------------------
+MAXIMUM ABSOLUTE ERROR (Residual)  = 6.9616e-03
+TRUE ANGULAR ERROR (Physical)      = 8.6023e-01 deg
+==============================================================
