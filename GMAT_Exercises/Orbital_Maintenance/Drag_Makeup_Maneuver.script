@@ -20,7 +20,7 @@ GMAT LEOsat.TA = 0;
 GMAT LEOsat.DryMass = 100;
 GMAT LEOsat.Cd = 2.2;
 GMAT LEOsat.Cr = 1.8;
-GMAT LEOsat.DragArea = 15;
+GMAT LEOsat.DragArea = 1;
 GMAT LEOsat.SRPArea = 1;
 GMAT LEOsat.SPADDragScaleFactor = 1;
 GMAT LEOsat.SPADSRPScaleFactor = 1;
@@ -52,6 +52,7 @@ GMAT LEOsat.AttitudeDisplayStateType = 'Quaternion';
 GMAT LEOsat.AttitudeRateDisplayStateType = 'AngularVelocity';
 GMAT LEOsat.AttitudeCoordinateSystem = EarthMJ2000Eq;
 GMAT LEOsat.EulerAngleSequence = '321';
+
 
 
 %----------------------------------------
@@ -103,7 +104,7 @@ Create ImpulsiveBurn Burn1_Drag;
 GMAT Burn1_Drag.CoordinateSystem = Local;
 GMAT Burn1_Drag.Origin = Earth;
 GMAT Burn1_Drag.Axes = VNB;
-GMAT Burn1_Drag.Element1 = 0.00566;
+GMAT Burn1_Drag.Element1 = 0.00283;
 GMAT Burn1_Drag.Element2 = 0;
 GMAT Burn1_Drag.Element3 = 0;
 GMAT Burn1_Drag.DecrementMass = false;
@@ -114,7 +115,7 @@ Create ImpulsiveBurn Burn2_Drag;
 GMAT Burn2_Drag.CoordinateSystem = Local;
 GMAT Burn2_Drag.Origin = Earth;
 GMAT Burn2_Drag.Axes = VNB;
-GMAT Burn2_Drag.Element1 = 0.00566;
+GMAT Burn2_Drag.Element1 = 0.00283;
 GMAT Burn2_Drag.Element2 = 0;
 GMAT Burn2_Drag.Element3 = 0;
 GMAT Burn2_Drag.DecrementMass = false;
@@ -127,10 +128,10 @@ GMAT Burn2_Drag.GravitationalAccel = 9.81;
 
 Create OrbitView DefaultOrbitView;
 GMAT DefaultOrbitView.SolverIterations = Current;
-GMAT DefaultOrbitView.UpperLeft = [ 0.002173913043478261 0 ];
+GMAT DefaultOrbitView.UpperLeft = [ 0.001449275362318841 0 ];
 GMAT DefaultOrbitView.Size = [ 0.4992753623188406 0.4484848484848485 ];
-GMAT DefaultOrbitView.RelativeZOrder = 155;
-GMAT DefaultOrbitView.Maximized = true;
+GMAT DefaultOrbitView.RelativeZOrder = 12;
+GMAT DefaultOrbitView.Maximized = false;
 GMAT DefaultOrbitView.Add = {LEOsat, Earth};
 GMAT DefaultOrbitView.CoordinateSystem = EarthMJ2000Eq;
 GMAT DefaultOrbitView.DrawObject = [ true true ];
@@ -159,10 +160,10 @@ GMAT DefaultOrbitView.EnableConstellations = On;
 
 Create GroundTrackPlot DefaultGroundTrackPlot;
 GMAT DefaultGroundTrackPlot.SolverIterations = Current;
-GMAT DefaultGroundTrackPlot.UpperLeft = [ 0.002898550724637681 0.4545454545454545 ];
+GMAT DefaultGroundTrackPlot.UpperLeft = [ 0.002173913043478261 0.453030303030303 ];
 GMAT DefaultGroundTrackPlot.Size = [ 0.5 0.45 ];
-GMAT DefaultGroundTrackPlot.RelativeZOrder = 151;
-GMAT DefaultGroundTrackPlot.Maximized = true;
+GMAT DefaultGroundTrackPlot.RelativeZOrder = 7;
+GMAT DefaultGroundTrackPlot.Maximized = false;
 GMAT DefaultGroundTrackPlot.Add = {LEOsat};
 GMAT DefaultGroundTrackPlot.DataCollectFrequency = 1;
 GMAT DefaultGroundTrackPlot.UpdatePlotFrequency = 50;
@@ -174,9 +175,9 @@ GMAT DefaultGroundTrackPlot.TextureMap = 'ModifiedBlueMarble.jpg';
 
 Create XYPlot XYPlot1;
 GMAT XYPlot1.SolverIterations = Current;
-GMAT XYPlot1.UpperLeft = [ 0.3202898550724638 0.1878787878787879 ];
+GMAT XYPlot1.UpperLeft = [ 0.3195652173913043 0.1863636363636364 ];
 GMAT XYPlot1.Size = [ 0.5 0.45 ];
-GMAT XYPlot1.RelativeZOrder = 159;
+GMAT XYPlot1.RelativeZOrder = 67;
 GMAT XYPlot1.Maximized = true;
 GMAT XYPlot1.XVariable = LEOsat.ElapsedDays;
 GMAT XYPlot1.YVariables = {LEOsat.Earth.SMA};
