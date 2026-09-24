@@ -23,4 +23,11 @@ Magnetorquer Unloading (Desaturation) Logic: Introduce an active momentum-dumpin
  
 When safety thresholds are breached due to persistent environmental disturbances, the algorithm computes a target magnetic dipole (m) via the cross-product law to generate an auxiliary external torque: τ_mtq =m×B
 
-This safely bleeds off excess accumulated momentum through geomagnetic interaction without expending any propellant mass.
+This safely bleeds off excess accumulated momentum through geomagnetic interaction without expending any propellant mass.ù
+
+
+3) Coupled 6-DOF Dynamics (Orbital Propagation): To accurately simulate long-duration environmental effects and validate autonomous station-keeping, the current kinematic orbit assumption can be upgraded to a fully coupled 6 Degrees-of-Freedom (6-DOF) architecture.
+
+Translational State Integration: Expand the continuous integration loop by incorporating the spacecraft’s Cartesian position and velocity vectors ([r; v]). This transitions the model from pure attitude dynamics to a complete 6-DOF state, utilizing Cowell’s formulation and high-order numerical solvers (e.g., Runge-Kutta or Dormand-Prince) to propagate the perturbed trajectory.
+
+High-Fidelity Environmental Feedback: Dynamically link the instantaneous orbital state to the environmental disturbance block. Rather than relying on constant parameters, this allows the simulation to capture complex time-varying torques, such as Gravity Gradient fluctuations in eccentric orbits and Aerodynamic Drag variations computed via advanced atmospheric density models (e.g., NRLMSISE-00) during altitude decays or day/night cycle transitions.
