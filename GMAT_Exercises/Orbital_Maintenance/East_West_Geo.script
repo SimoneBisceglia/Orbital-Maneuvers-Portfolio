@@ -12,7 +12,7 @@ GMAT GEOsat.Epoch = '01 Jan 2000 11:59:28.000';
 GMAT GEOsat.CoordinateSystem = EarthMJ2000Eq;
 GMAT GEOsat.DisplayStateType = Keplerian;
 GMAT GEOsat.SMA = 42164.16899999999;
-GMAT GEOsat.ECC = 1.879039814881339e-16;
+GMAT GEOsat.ECC = 3.758079629762677e-16;
 GMAT GEOsat.INC = 0;
 GMAT GEOsat.RAAN = 0;
 GMAT GEOsat.AOP = 0;
@@ -53,6 +53,7 @@ GMAT GEOsat.AttitudeRateDisplayStateType = 'AngularVelocity';
 GMAT GEOsat.AttitudeCoordinateSystem = EarthMJ2000Eq;
 GMAT GEOsat.EulerAngleSequence = '321';
 
+
 %----------------------------------------
 %---------- ForceModels
 %----------------------------------------
@@ -62,7 +63,7 @@ GMAT DefaultProp_ForceModel.CentralBody = Earth;
 GMAT DefaultProp_ForceModel.PrimaryBodies = {Earth};
 GMAT DefaultProp_ForceModel.PointMasses = {Luna, Sun};
 GMAT DefaultProp_ForceModel.Drag = None;
-GMAT DefaultProp_ForceModel.SRP = Off;
+GMAT DefaultProp_ForceModel.SRP = On;
 GMAT DefaultProp_ForceModel.RelativisticCorrection = Off;
 GMAT DefaultProp_ForceModel.ErrorControl = RSSStep;
 GMAT DefaultProp_ForceModel.GravityField.Earth.Degree = 4;
@@ -70,6 +71,9 @@ GMAT DefaultProp_ForceModel.GravityField.Earth.Order = 4;
 GMAT DefaultProp_ForceModel.GravityField.Earth.StmLimit = 100;
 GMAT DefaultProp_ForceModel.GravityField.Earth.PotentialFile = 'JGM2.cof';
 GMAT DefaultProp_ForceModel.GravityField.Earth.TideModel = 'None';
+GMAT DefaultProp_ForceModel.SRP.Flux = 1367;
+GMAT DefaultProp_ForceModel.SRP.SRPModel = Spherical;
+GMAT DefaultProp_ForceModel.SRP.Nominal_Sun = 149597870.691;
 
 %----------------------------------------
 %---------- Propagators
@@ -117,10 +121,10 @@ GMAT ImpulsiveBurn2.GravitationalAccel = 9.81;
 
 Create OrbitView DefaultOrbitView;
 GMAT DefaultOrbitView.SolverIterations = Current;
-GMAT DefaultOrbitView.UpperLeft = [ 0.003623188405797101 0 ];
+GMAT DefaultOrbitView.UpperLeft = [ 0.002898550724637681 0 ];
 GMAT DefaultOrbitView.Size = [ 0.5 0.45 ];
-GMAT DefaultOrbitView.RelativeZOrder = 52;
-GMAT DefaultOrbitView.Maximized = true;
+GMAT DefaultOrbitView.RelativeZOrder = 5;
+GMAT DefaultOrbitView.Maximized = false;
 GMAT DefaultOrbitView.Add = {GEOsat, Earth};
 GMAT DefaultOrbitView.CoordinateSystem = EarthMJ2000Eq;
 GMAT DefaultOrbitView.DrawObject = [ true true ];
@@ -149,10 +153,10 @@ GMAT DefaultOrbitView.EnableConstellations = On;
 
 Create GroundTrackPlot DefaultGroundTrackPlot;
 GMAT DefaultGroundTrackPlot.SolverIterations = Current;
-GMAT DefaultGroundTrackPlot.UpperLeft = [ 0.003623188405797101 0.4560606060606061 ];
+GMAT DefaultGroundTrackPlot.UpperLeft = [ 0.002898550724637681 0.4545454545454545 ];
 GMAT DefaultGroundTrackPlot.Size = [ 0.5 0.45 ];
-GMAT DefaultGroundTrackPlot.RelativeZOrder = 56;
-GMAT DefaultGroundTrackPlot.Maximized = true;
+GMAT DefaultGroundTrackPlot.RelativeZOrder = 10;
+GMAT DefaultGroundTrackPlot.Maximized = false;
 GMAT DefaultGroundTrackPlot.Add = {GEOsat};
 GMAT DefaultGroundTrackPlot.DataCollectFrequency = 1;
 GMAT DefaultGroundTrackPlot.UpdatePlotFrequency = 50;
@@ -164,9 +168,9 @@ GMAT DefaultGroundTrackPlot.TextureMap = 'ModifiedBlueMarble.jpg';
 
 Create XYPlot XYPlot1;
 GMAT XYPlot1.SolverIterations = Current;
-GMAT XYPlot1.UpperLeft = [ 0.04347826086956522 0.5166666666666667 ];
+GMAT XYPlot1.UpperLeft = [ 0.0427536231884058 0.5151515151515151 ];
 GMAT XYPlot1.Size = [ 0.5 0.45 ];
-GMAT XYPlot1.RelativeZOrder = 60;
+GMAT XYPlot1.RelativeZOrder = 42;
 GMAT XYPlot1.Maximized = true;
 GMAT XYPlot1.XVariable = GEOsat.ElapsedDays;
 GMAT XYPlot1.YVariables = {GEOsat.Earth.Longitude};
