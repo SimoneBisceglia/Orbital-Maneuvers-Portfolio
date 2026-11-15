@@ -1,10 +1,13 @@
-function torque_dist = environment_model(q_BI, t, omega_orb_mag, q_LVLH_ECI_init, I_tensor, mu_E, r_orbit, rho_atm, Cd, Area_drag, V_orb, cp_cg_offset_drag)
+function torque_dist = environment_model(q_BI, t, omega_orb_mag, q_LVLH_ECI_init, I_tensor, mu_E, r_orbit, rho_atm, Cd, Area_drag, V_orb, cp_cg_offset_drag, P_solar, Cr, Area_srp, cp_cg_offset_srp)
     % =====================================================================
     % ENVIRONMENTAL DISTURBANCES MODEL
-    % Calculates Gravity Gradient and Aerodynamic Drag torques in BODY frame.
+    % Calculates Gravity Gradient, Aerodynamic Drag, and SRP torques in BODY frame.
     % =====================================================================
     
-    % 1. Calculate current LVLH to ECI quaternion (Orbit evolution)
+    % Ensure unit quaternion for q_BI (BODY w.r.t. ECI)
+    q_BI = q_BI / norm(q_BI);
+
+    % 1. Calculate current LVLH w.r.t. ECI quaternion (Orbit evolution)
     theta_orb = -omega_orb_mag * t;
     q_orb_rot = [cos(theta_orb/2); 0; sin(theta_orb/2); 0];
     
@@ -16,8 +19,9 @@ function torque_dist = environment_model(q_BI, t, omega_orb_mag, q_LVLH_ECI_init
         qw1*qx2 + qx1*qw2 + qy1*qz2 - qz1*qy2;
         qw1*qy2 - qx1*qz2 + qy1*qw2 + qz1*qx2;
         qw1*qz2 + qx1*qy2 - qy1*qx2 + qz1*qw2 ];
+    q_LI_curr = q_LI_curr / norm(q_LI_curr);
         
-    % 2. Calculate BODY to LVLH quaternion: q_BL = q_BI * q_LI_curr^(-1)
+    % 2. Calculate BODY w.r.t. LVLH quaternion: q_BL = q_BI * q_LI_curr^(-1)
     q_LI_conj = [q_LI_curr(1); -q_LI_curr(2); -q_LI_curr(3); -q_LI_curr(4)];
     
     qw1 = q_BI(1); qx1 = q_BI(2); qy1 = q_BI(3); qz1 = q_BI(4);
@@ -29,12 +33,19 @@ function torque_dist = environment_model(q_BI, t, omega_orb_mag, q_LVLH_ECI_init
         qw1*qz2 + qx1*qy2 - qy1*qx2 + qz1*qw2 ];
     q_BL = q_BL / norm(q_BL);
     
-    % 3. DCM from LVLH to BODY
+    % 3. DCM from LVLH to BODY (C_BL) derived from q_BL
     qw = q_BL(1); qx = q_BL(2); qy = q_BL(3); qz = q_BL(4);
     C_BL = [ ...
         1 - 2*(qy^2 + qz^2),     2*(qx*qy + qw*qz),       2*(qx*qz - qw*qy);
         2*(qx*qy - qw*qz),       1 - 2*(qx^2 + qz^2),     2*(qy*qz + qw*qx);
         2*(qx*qz + qw*qy),       2*(qy*qz - qw*qx),       1 - 2*(qx^2 + qy^2) ];
+
+    % 4. DCM from ECI to BODY (C_BI) derived from q_BI for inertial vectors (Sun direction)
+    qw_i = q_BI(1); qx_i = q_BI(2); qy_i = q_BI(3); qz_i = q_BI(4);
+    C_BI = [ ...
+        1 - 2*(qy_i^2 + qz_i^2),   2*(qx_i*qy_i + qw_i*qz_i),   2*(qx_i*qz_i - qw_i*qy_i);
+        2*(qx_i*qy_i - qw_i*qz_i), 1 - 2*(qx_i^2 + qz_i^2),     2*(qy_i*qz_i + qw_i*qx_i);
+        2*(qx_i*qz_i + qw_i*qy_i), 2*(qy_i*qz_i - qw_i*qx_i),   1 - 2*(qx_i^2 + qy_i^2) ];
         
     % ---------------------------------------------------------------------
     % A) GRAVITY GRADIENT TORQUE
@@ -50,7 +61,7 @@ function torque_dist = environment_model(q_BI, t, omega_orb_mag, q_LVLH_ECI_init
     
     % ---------------------------------------------------------------------
     % B) AERODYNAMIC DRAG TORQUE
-    % Satellite moves along LVLH +X. So the incoming wind is -X [-1; 0; 0]
+    % Satellite moves along LVLH +X. Incoming relative wind is -X [-1; 0; 0]
     % ---------------------------------------------------------------------
     u_wind_LVLH = [-1; 0; 0];
     u_wind_BODY = C_BL * u_wind_LVLH;
@@ -59,13 +70,27 @@ function torque_dist = environment_model(q_BI, t, omega_orb_mag, q_LVLH_ECI_init
     F_drag_mag = 0.5 * rho_atm * Cd * Area_drag * V_orb^2;
     F_drag_BODY = F_drag_mag * u_wind_BODY;
     
-    % tau_drag = offset x F_drag
+    % tau_drag = offset_drag x F_drag
     tau_drag = cross(cp_cg_offset_drag, F_drag_BODY);
+
+    % ---------------------------------------------------------------------
+    % C) SOLAR RADIATION PRESSURE (SRP) TORQUE
+    % Incoming solar photons direction fixed in ECI along +X_ECI [1; 0; 0]
+    % ---------------------------------------------------------------------
+    u_sun_ECI  = [1; 0; 0];
+    u_sun_BODY = C_BI * u_sun_ECI;
+    
+    % F_srp = P_solar * Cr * Area_srp * u_sun
+    F_srp_mag  = P_solar * Cr * Area_srp;
+    F_srp_BODY = F_srp_mag * u_sun_BODY;
+    
+    % tau_srp = offset_srp x F_srp
+    tau_srp = cross(cp_cg_offset_srp, F_srp_BODY);
     
     % ---------------------------------------------------------------------
     % TOTAL DISTURBANCE TORQUE
     % ---------------------------------------------------------------------
-    torque_dist = tau_gg + tau_drag;
+    torque_dist = tau_gg + tau_drag + tau_srp;
 end
 
 function [q_meas, omega_meas] = sensor_model(q_true, omega_true, st_noise_sigma, gyro_noise_sigma, gyro_bias)
