@@ -1,5 +1,5 @@
 % =========================================================================
-% ADCS / GNC SIMULATION: MASTER INITIALIZATION SCRIPT 
+% ADCS / GNC SIMULATION: MASTER INITIALIZATION SCRIPT
 % IDEAL BASELINE - NADIR TO OFF-NADIR SLEW
 %
 % Quaternion convention:
@@ -71,7 +71,7 @@ roll_init  = deg2rad(0.0);
 pitch_init = deg2rad(0.0);
 yaw_init   = deg2rad(0.0);
 
-%% 4.2 Initial BODY-to-LVLH quaternion q_BL_init (Half angles)
+%% 4.2 Initial BODY w.r.t. LVLH quaternion q_BL_init (Half angles)
 cy0 = cos(yaw_init   / 2);
 sy0 = sin(yaw_init   / 2);
 cp0 = cos(pitch_init / 2);
@@ -87,7 +87,7 @@ q_Body_LVLH_init = [ ...
     cr0*cp0*sy0 - sr0*sp0*cy0 ];
 q_Body_LVLH_init = q_Body_LVLH_init / norm(q_Body_LVLH_init);
 
-%% 4.3 Initial LVLH-to-ECI quaternion q_LI_init
+%% 4.3 Initial LVLH w.r.t. ECI quaternion q_LI_init
 q_LVLH_ECI_init = [sqrt(2)/2;
                    0;
                    -sqrt(2)/2;
@@ -158,7 +158,7 @@ roll_f  = deg2rad(30.0);
 pitch_f = deg2rad(45.0);
 yaw_f   = deg2rad(20.0);
 
-%% 7.2 Final BODY-to-LVLH quaternion q_BL_final (Half angles)
+%% 7.2 Final BODY w.r.t. LVLH quaternion q_BL_final (Half angles)
 cy_f = cos(yaw_f   / 2);
 sy_f = sin(yaw_f   / 2);
 cp_f = cos(pitch_f / 2);
@@ -173,7 +173,7 @@ q_Body_LVLH_final = [ ...
     cr_f*cp_f*sy_f - sr_f*sp_f*cy_f ];
 q_Body_LVLH_final = q_Body_LVLH_final / norm(q_Body_LVLH_final);
 
-%% 7.3 Final LVLH-to-ECI quaternion
+%% 7.3 Orbital rotation quaternion (from t = 0 to t = T_sim)
 theta_orb_final = -omega_orb_mag * T_sim;
 q_orb_rot_final = [ ...
     cos(theta_orb_final/2);
@@ -202,7 +202,7 @@ q_LI_final = [ ...
   + q_orb_rot_final(4)*q_LVLH_ECI_init(1) ];
 q_LI_final = q_LI_final / norm(q_LI_final);
 
-%% 7.5 Final absolute BODY-to-ECI quaternion q_BI_final (Manual composition)
+%% 7.5 Final absolute BODY w.r.t. ECI quaternion q_BI_final (Manual composition)
 q_final_expected = [ ...
     q_Body_LVLH_final(1)*q_LI_final(1) ...
   - q_Body_LVLH_final(2)*q_LI_final(2) ...
@@ -304,3 +304,4 @@ disp('==============================================================');
 disp('Parameters successfully loaded into the MATLAB Workspace.');
 disp('Ready to run the Simulink model.');
 disp('==============================================================');
+
