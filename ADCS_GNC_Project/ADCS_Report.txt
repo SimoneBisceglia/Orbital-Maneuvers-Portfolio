@@ -8,7 +8,7 @@ ADCS HIGH-FIDELITY SIMULATOR: ACTUATOR TRADE-OFF ANALYSIS
 1.1 Reaction Wheels (RW)
 The Reaction Wheel architecture provides the smoothest dynamic response among the three configurations and successfully tracks the commanded trajectory throughout the entire simulation. Because the wheels operate with a wide torque margin over the maneuver demand, the spacecraft follows the quintic S-curve profile continuously across all three axes, with the dominant angular rate occurring on the Pitch axis (which executes the largest rotation). 
 
-Once the active slew concludes, the angular rates settle smoothly onto the steady-state orbital tracking profile without residual oscillations. The electrical power profile is strictly confined to the active acceleration and deceleration phases of the maneuver, exhibiting a clean double-peak shape before dropping to near-zero maintenance levels during post-maneuver fine pointing. A minor steady-state pointing residual (~1 deg) remains at the end of the simulation, driven purely by the uncompensated gyroscope thermal bias inside the proportional-derivative loop.
+Once the active slew concludes, the angular rates settle smoothly onto the steady-state orbital tracking profile without residual oscillations. The electrical power profile is strictly confined to the active acceleration and deceleration phases of the maneuver, exhibiting a clean double-peak shape before dropping to near-zero maintenance levels during post-maneuver fine pointing. A minor steady-state pointing residual remains at the end of the simulation, driven primarily by uncompensated gyroscope bias and sensor noise inside the proportional-derivative loop.
 
 Assessment: RW provides the optimal combination of slew agility, continuous torque modulation, fine-pointing accuracy, and minimal steady-state power consumption.
 
@@ -16,7 +16,7 @@ Assessment: RW provides the optimal combination of slew agility, continuous torq
 1.2 Cold Gas Thrusters (THR)
 The Cold Gas Thruster architecture matches the slew agility of the Reaction Wheels, demonstrating that a thruster-based system has more than enough control authority to execute rapid rotational maneuvers. During the active slew window, the thrusters drive the spacecraft toward the target orientation through a sequence of discrete, stepped velocity increments.
 
-However, the system is severely penalized by its discrete On/Off (Bang-Bang) actuation logic once the main slew is completed. In the post-maneuver settling phase, navigation sensor noise and uncompensated gyroscope bias continuously trigger the controller across the switching deadband. This interaction traps the spacecraft—most notably along the Roll axis—into a persistent, high-frequency limit cycle (chattering). Consequently, the thrusters continue to fire intermittently for several hundred seconds after the maneuver has ended, wasting propellant without improving pointing accuracy, while the deadband itself leaves a noticeable static pointing offset (~7 deg).
+However, the system is severely penalized by its discrete On/Off (Bang-Bang) actuation logic once the main slew is completed. In the post-maneuver settling phase, navigation sensor noise and uncompensated gyroscope bias continuously trigger the controller across the switching deadband. This interaction traps the spacecraft, most notably along the Roll axis, into a persistent, high-frequency limit cycle (chattering). Consequently, the thrusters continue to fire intermittently for several hundred seconds after the maneuver has ended, wasting propellant without improving pointing accuracy, while the deadband itself leaves a noticeable static pointing offset.
 
 Assessment: THR offers high slew authority for rapid or coarse maneuvers, but exhibits poor fine-pointing settling and prohibitive steady-state propellant consumption unless paired with a pulse modulator (e.g., PWPF) or an estimator for gyro-bias rejection.
 
@@ -26,7 +26,7 @@ The Magnetorquer architecture fails to track the time-constrained three-axis sle
 1) Insufficient Torque Authority (Primary Cause): At the simulated LEO altitude, the interaction between the maximum hardware magnetic dipole and the local geomagnetic field generates a peak torque roughly one order of magnitude lower than the nominal torque required by the 120-s slew profile.
 2) Instantaneous Underactuation (Secondary Cause): Because magnetic torque is governed by the cross product between the coil dipole and the local geomagnetic field vector, no control torque can be generated parallel to the magnetic field line at any given instant.
 
-As a result, the Pitch axis, which demands the highest control effort—barely responds, and the overall attitude evolution suffers from severe phase lag and cross-axis divergence, remaining far from the target attitude by the end of the simulation. Attempting to compensate for the growing attitude error, all three magnetic coils immediately hit hardware saturation and remain clipped at their maximum power ceiling for over half of the simulation before slowly decaying into an offset equilibrium.
+As a result, the Pitch axis, which demands the highest control effort, suffers from severe phase lag, and the overall attitude evolution exhibits cross-axis divergence, failing to acquire the target attitude within the maneuver window and remaining far off-target by the end of the simulation. Attempting to compensate for the growing attitude error, all three magnetic coils immediately hit hardware saturation and remain clipped at their maximum power ceiling for over half of the simulation before slowly decaying into an offset equilibrium.
 
 Assessment: MTQs are physically unsuitable for agile, time-constrained slews, operating in deep saturation without achieving the target orientation.
 
@@ -45,7 +45,7 @@ q4 (qz, Yaw)             0.0000         -0.1263          -0.129 (-0.0027) -0.107
 -------------------------------------------------------------------------------------------------------------
 Max Component Error      --              0.0000           < 0.007 (on q2)  ~0.056 (on q2)   ~0.229 (on q4)
 3D Error Norm |dq|       --              0.0000           ~0.0093 (<0.01)  ~0.0617          ~0.2846 (Failed)
-Equiv. Angular Error     --              0.00 deg         ~1.06 deg        ~7.07 deg        ~33.1 deg
+Equiv. Angular Error     --              0.00 deg         ~1.06 deg        ~7.07 deg        ~33 deg
 
 
 2.2 Angular Velocity Profile by Axis and Simulation Time
@@ -55,19 +55,19 @@ Rate Metric / Axis              Reaction Wheels (RW)             Cold Gas Thrust
 Absolute Peak Positive Rate     ~12.3e-3 rad/s (on Pitch, wy)    ~11.1e-3 rad/s (on Pitch, wy)     ~3.6e-3 rad/s (on Roll & Yaw)
 Dominant Peak Axis & Time       Pitch (wy) at t ~ 73 s           Pitch (wy) plateau, t ~ 55-90 s   Roll (wx, t~75s) & Yaw (wz, t~336s)
 Roll Axis Rate (wx, Body X)     Peak +5.7e-3 rad/s (t ~ 67 s);   Peak +4.55e-3 rad/s (t ~ 55-85s); Peak +3.6e-3 rad/s (t ~ 75 s);
-                                settles to ~0 rad/s (t > 220 s)  limit cycle +1.1/-2.2e-3 (135-485s) drops < -4.8e-3 (t ~ 200-260 s)
+                                settles to ~0 rad/s (t > 220 s)  limit cycle +1.1/-2.2e-3 (135-485s) deep negative excursions (< -4.8e-3)
 Pitch Axis Rate (wy, Body Y)    Peak +12.3e-3 rad/s (t ~ 73 s);  Stepped +11.1e-3 rad/s (55-90 s); Delayed peak +1.85e-3 (t ~ 145 s);
                                 settles to -1.1e-3 (t > 220 s)   bursts at t ~ 150s, 230s; settles reverses to -3.05e-3 (t ~ 340 s)
 Yaw Axis Rate (wz, Body Z)      +1.15e-3 (t~40s), then < -4.8e-3 Stepped < -4.8e-3 (t ~ 68-130 s); Negative dip < -4.8e-3 (95-182 s);
                                 (t ~ 80-115 s); settles to ~0    settles flat to ~0 (t > 135 s)    late peak +3.5e-3 (t ~ 336 s)
 Steady-State Tracking (600 s)   Smooth orbital rate lock         intermittent Roll steps           Offset drift (wy ~ -1.4e-3 rad/s)
 
-Note: Negative excursions on Yaw (RW, THR, MTQ) and Roll (MTQ) briefly exceed the -4.8e-3 rad/s lower vertical axis limit of the plots.
+Note: Negative excursions on Yaw (RW, THR, MTQ) and Roll (MTQ) exceed the -4.8e-3 rad/s lower vertical axis display limit of the figures.
 
 
 2.3 Torque Authority, Resource Consumption, and Operational Trade-Offs
 
-Slew Peak Torque Demand         Roll: ~3.15e-3 Nm | Pitch: ~4.72e-3 Nm | Yaw: ~1.40e-3 Nm  (Combined 3-Axis Peak: ~8.50e-3 Nm)
+Slew Peak Torque Demand         Roll: ~3.15e-3 Nm | Pitch: ~4.72e-3 Nm | Yaw: ~1.40e-3 Nm  (Combined 3-Axis Norm: ~5.85e-3 Nm)
 
 Parameter                       Reaction Wheels (RW)             Cold Gas Thrusters (THR)          Magnetorquers (MTQ)
 ----------------------------------------------------------------------------------------------------------------------------------
@@ -91,5 +91,5 @@ The high-fidelity simulation results validate the classic subsystem sizing rules
 
 2. Cold Gas Thrusters provide high instantaneous torque capable of matching RW slew times, making them effective for rapid slews, orbital maneuvers, or safe-mode recovery. However, coupling a Bang-Bang thruster law directly with noisy navigation sensors (Star Tracker noise and Gyro bias) triggers sustained Roll-axis limit cycling, rapidly depleting onboard propellant after the maneuver is over and leaving a static deadband pointing offset (~7.07 deg).
 
-3. Magnetorquers fail the rapid slew primarily due to insufficient torque authority (~10x deficit against the Pitch slew demand), exacerbated by instantaneous magnetic underactuation (torque perpendicular to B). This drives the coils into continuous power saturation without completing the maneuver (~33.1 deg error). While geomagnetic field rotation along the orbit restores three-axis controllability over multi-orbit timescales, MTQs cannot execute fast time-constrained slews and should instead be paired with Reaction Wheels for continuous, propellant-free momentum unloading and initial detumbling (B-dot).
+3. Magnetorquers fail the rapid slew primarily due to insufficient torque authority (~10x deficit against the Pitch slew demand), exacerbated by instantaneous magnetic underactuation (torque perpendicular to B). This drives the coils into continuous power saturation without completing the maneuver (~33 deg error). While geomagnetic field rotation along the orbit restores three-axis controllability over multi-orbit timescales, MTQs cannot execute fast time-constrained slews and should instead be paired with Reaction Wheels for continuous, propellant-free momentum unloading and initial detumbling (B-dot).
 ================================================================================
