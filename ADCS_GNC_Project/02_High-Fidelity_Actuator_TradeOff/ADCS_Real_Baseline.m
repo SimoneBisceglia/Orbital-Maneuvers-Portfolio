@@ -1,5 +1,14 @@
 % =========================================================================
 % ADCS / GNC SIMULATION: HIGH-FIDELITY SETUP (REAL ACTUATORS & ENVIRONMENT)
+%
+% Quaternion convention:
+%   q_BI = attitude quaternion representing BODY w.r.t. ECI
+%   q_BL = attitude quaternion representing BODY w.r.t. LVLH
+%   q_LI = attitude quaternion representing LVLH w.r.t. ECI
+%
+% Angular velocity convention:
+%   omega = angular velocity of BODY w.r.t. ECI,
+%           expressed in BODY coordinates [rad/s]
 % =========================================================================
 clc;
 clear;
@@ -20,19 +29,22 @@ R_E     = 6371.0;           % Earth's mean radius [km]
 h_orbit = 800.0;            % Orbit altitude [km]
 r_orbit = R_E + h_orbit;    % Orbital radius [km]
 omega_orb_mag = sqrt(mu_E / r_orbit^3);   % Circular orbital angular velocity [rad/s]
-omega_orb_LVLH = [0; -omega_orb_mag; 0];  % Expressed in LVLH coordinates
+omega_orb_LVLH = [0; -omega_orb_mag; 0];  % Expressed in LVLH coordinates [rad/s]
 
 %% ========================================================================
 % 3. SPACECRAFT RIGID-BODY PARAMETERS
 % =========================================================================
-I_xx = 15.0; I_yy = 15.0; I_zz = 10.0;
-I_tensor = diag([I_xx, I_yy, I_zz]);
-I_inv = inv(I_tensor);
+I_xx = 15.0; I_yy = 15.0; I_zz = 10.0;    % Principal moments of inertia [kg*m^2]
+I_tensor = diag([I_xx, I_yy, I_zz]);      % Inertia tensor [kg*m^2]
+I_inv = inv(I_tensor);                    % Inverse inertia tensor [1/(kg*m^2)]
 
 %% ========================================================================
 % 4. INITIAL ATTITUDE AND ANGULAR VELOCITY (Nadir Pointing)
 % =========================================================================
+% 4.1 Initial Euler angles w.r.t. LVLH [rad] (3-2-1 / ZYX sequence)
 roll_init = 0; pitch_init = 0; yaw_init = 0;
+
+% 4.2 Initial BODY w.r.t. LVLH quaternion q_BL_init (Half angles)
 cy0 = cos(yaw_init / 2);   sy0 = sin(yaw_init / 2);
 cp0 = cos(pitch_init / 2); sp0 = sin(pitch_init / 2);
 cr0 = cos(roll_init / 2);  sr0 = sin(roll_init / 2);
@@ -42,41 +54,44 @@ q_Body_LVLH_init = [ ...
     cr0*sp0*cy0 + sr0*cp0*sy0;
     cr0*cp0*sy0 - sr0*sp0*cy0 ];
 q_Body_LVLH_init = q_Body_LVLH_init / norm(q_Body_LVLH_init);
+
+% 4.3 Initial LVLH w.r.t. ECI quaternion q_LI_init
 q_LVLH_ECI_init = [sqrt(2)/2; 0; -sqrt(2)/2; 0];
 q_LVLH_ECI_init = q_LVLH_ECI_init / norm(q_LVLH_ECI_init);
 
-% 4.4 Initial absolute quaternion q_BI_init (Using quatmultiply)
+% 4.4 Initial absolute BODY w.r.t. ECI quaternion q_BI_init (q_BL * q_LI)
 q_init = quatmultiply(q_Body_LVLH_init.', q_LVLH_ECI_init.').';
 q_init = q_init / norm(q_init);
 
+% 4.5 Initial relative angular velocity (BODY w.r.t. LVLH) [rad/s]
 omega_rel_init = [0; 0; 0];
 
-% Initial DCM matrix with full angles (roll_init, pitch_init, yaw_init = 0)
+% 4.6 Initial DCM from LVLH to BODY (C_BL_init) with full angles
 cy0_mat = cos(yaw_init);   sy0_mat = sin(yaw_init);
 cp0_mat = cos(pitch_init); sp0_mat = sin(pitch_init);
 cr0_mat = cos(roll_init);  sr0_mat = sin(roll_init);
-
 C_BL_init = [ ...
     cp0_mat*cy0_mat,                                   cp0_mat*sy0_mat,                                  -sp0_mat;
     sr0_mat*sp0_mat*cy0_mat - cr0_mat*sy0_mat,         sr0_mat*sp0_mat*sy0_mat + cr0_mat*cy0_mat,         sr0_mat*cp0_mat;
     cr0_mat*sp0_mat*cy0_mat + sr0_mat*sy0_mat,         cr0_mat*sp0_mat*sy0_mat - sr0_mat*cy0_mat,         cr0_mat*cp0_mat ];
 
+% 4.7 Initial BODY angular velocity w.r.t. ECI, expressed in BODY frame [rad/s]
 omega_init = C_BL_init * omega_orb_LVLH;
 
 %% ========================================================================
 % 5. PD CONTROLLER GAINS
 % =========================================================================
-omega_n = 0.1;       
-zeta    = 1.0;       
-Kp = diag(diag(I_tensor * omega_n^2));
-Kd = diag(diag(2 * zeta * I_tensor * omega_n));
+omega_n = 0.1;       % Closed-loop natural frequency [rad/s]
+zeta    = 1.0;       % Damping ratio (critically damped) [-]
+Kp = diag(diag(I_tensor * omega_n^2));          % Proportional gain matrix [Nm]
+Kd = diag(diag(2 * zeta * I_tensor * omega_n)); % Derivative gain matrix [Nm*s/rad]
 
 %% ========================================================================
 % 6. FINAL TARGET ATTITUDE (Off-Nadir)
 % =========================================================================
-roll_f  = deg2rad(30.0); pitch_f = deg2rad(45.0); yaw_f   = deg2rad(20.0);
+roll_f  = deg2rad(30.0); pitch_f = deg2rad(45.0); yaw_f = deg2rad(20.0);
 
-% 6.1 Target BODY-to-LVLH quaternion (Half angles)
+% 6.1 Target BODY w.r.t. LVLH quaternion q_BL_final (Half angles)
 cy_f = cos(yaw_f / 2);   sy_f = sin(yaw_f / 2);
 cp_f = cos(pitch_f / 2); sp_f = sin(pitch_f / 2);
 cr_f = cos(roll_f / 2);  sr_f = sin(roll_f / 2);
@@ -86,21 +101,24 @@ q_Body_LVLH_final = [ ...
     cr_f*sp_f*cy_f + sr_f*cp_f*sy_f;
     cr_f*cp_f*sy_f - sr_f*sp_f*cy_f ];
 q_Body_LVLH_final = q_Body_LVLH_final / norm(q_Body_LVLH_final);
+
+% 6.2 Orbital rotation quaternion from t = 0 to t = T_sim
 theta_orb_final = -omega_orb_mag * T_sim;
 q_orb_rot_final = [cos(theta_orb_final/2); 0; sin(theta_orb_final/2); 0];
 q_orb_rot_final = q_orb_rot_final / norm(q_orb_rot_final);
 
-% Using quatmultiply for orbital rotation
+% 6.3 Final LVLH w.r.t. ECI quaternion q_LI_final
 q_LI_final = quatmultiply(q_orb_rot_final.', q_LVLH_ECI_init.').';
 q_LI_final = q_LI_final / norm(q_LI_final);
 
-% Using quatmultiply for final expected absolute quaternion
+% 6.4 Final expected absolute BODY w.r.t. ECI quaternion q_BI_final (q_BL_final * q_LI_final)
 q_final_expected = quatmultiply(q_Body_LVLH_final.', q_LI_final.').';
 q_final_expected = q_final_expected / norm(q_final_expected);
 
+% 6.5 Final relative angular velocity (BODY w.r.t. LVLH) [rad/s]
 omega_rel_final = [0; 0; 0];
 
-% 6.2 Final DCM Matrix with Full Angles
+% 6.6 Final DCM from LVLH to BODY (C_BL_final) with full angles
 c_phi_f   = cos(roll_f);   s_phi_f   = sin(roll_f);
 c_theta_f = cos(pitch_f);  s_theta_f = sin(pitch_f);
 c_psi_f   = cos(yaw_f);    s_psi_f   = sin(yaw_f);
@@ -109,46 +127,47 @@ C_BL_final = [ ...
     s_phi_f*s_theta_f*c_psi_f - c_phi_f*s_psi_f,     s_phi_f*s_theta_f*s_psi_f + c_phi_f*c_psi_f,     s_phi_f*c_theta_f;
     c_phi_f*s_theta_f*c_psi_f + s_phi_f*s_psi_f,     c_phi_f*s_theta_f*s_psi_f - s_phi_f*c_psi_f,     c_phi_f*c_theta_f ];
 
+% 6.7 Final expected BODY angular velocity w.r.t. ECI, expressed in BODY frame [rad/s]
 omega_final_expected = C_BL_final * omega_orb_LVLH;
 
 %% ========================================================================
 % 7. ENVIRONMENTAL DISTURBANCES
 % =========================================================================
-rho_atm = 1e-13;            
-Cd = 2.2;                   
-Area_drag = 1.5;            
-V_orb = sqrt(mu_E*1e9 / (r_orbit*1e3)); 
-cp_cg_offset_drag = [0.05; 0.02; -0.03]; 
-P_solar = 4.56e-6;          
-Cr = 1.5;                   
-Area_srp = 2.0;             
-cp_cg_offset_srp = [0.0; 0.1; 0.05]; 
+rho_atm = 1e-13;                         % Atmospheric density at 800 km [kg/m^3]
+Cd = 2.2;                                % Aerodynamic drag coefficient [-]
+Area_drag = 1.5;                         % Cross-sectional drag area [m^2]
+V_orb = sqrt(mu_E*1e9 / (r_orbit*1e3));  % Orbital velocity magnitude [m/s]
+cp_cg_offset_drag = [0.05; 0.02; -0.03]; % Aerodynamic CP-to-CG moment arm in BODY [m]
+P_solar = 4.56e-6;                       % Solar radiation pressure at 1 AU [N/m^2]
+Cr = 1.5;                                % Radiation pressure reflectivity coefficient [-]
+Area_srp = 2.0;                          % Sun-exposed SRP area [m^2]
+cp_cg_offset_srp = [0.0; 0.1; 0.05];     % Optical CP-to-CG moment arm in BODY [m]
 
 %% ========================================================================
 % 8. SENSOR MODELS (NAVIGATION NOISE)
 % =========================================================================
-st_noise_sigma = 5e-4;      
-gyro_noise_sigma = 1e-5;    
-gyro_bias_true = [1e-4; -2e-4; 1.5e-4]; 
+st_noise_sigma = 5e-4;                   % Star Tracker 1-sigma attitude noise [rad]
+gyro_noise_sigma = 1e-5;                 % Gyroscope 1-sigma rate noise [rad/s]
+gyro_bias_true = [1e-4; -2e-4; 1.5e-4];  % Gyroscope constant bias in BODY [rad/s]
 
 %% ========================================================================
 % 9. ACTUATOR MODELS & BUDGET PARAMETERS
 % =========================================================================
 % Reaction Wheels
-rw_max_torque = 0.05;       
-rw_max_momentum = 1.5;      
-rw_power_W_per_Nm = 50.0;   
+rw_max_torque = 0.05;                    % Maximum wheel torque per axis [Nm]
+rw_max_momentum = 1.5;                   % Maximum wheel angular momentum capacity [Nms]
+rw_power_W_per_Nm = 50.0;                % Power consumption factor [W/Nm]
 % Magnetorquers
-mtq_max_dipole = 15.0;      
-M_earth_dipole = 7.96e15;   
-mtq_power_W_per_Am2 = 0.5;  
+mtq_max_dipole = 15.0;                   % Maximum magnetic dipole moment per axis [A*m^2]
+M_earth_dipole = 7.96e15;                % Earth's magnetic dipole strength [T*m^3]
+mtq_power_W_per_Am2 = 0.5;               % Power consumption factor [W/(A*m^2)]
 % Thrusters
-thruster_force = 1.0;       
-thruster_arm = 0.5;         
-thruster_max_torque = thruster_force * thruster_arm; 
-thruster_Isp = 65.0;        
-g0 = 9.80665;               
-thruster_min_pulse = 0.05;  
+thruster_force = 1.0;                    % Single thruster nominal thrust [N]
+thruster_arm = 0.5;                      % Thruster moment arm w.r.t. CG [m]
+thruster_max_torque = thruster_force * thruster_arm; % Maximum thruster torque per axis [Nm]
+thruster_Isp = 65.0;                     % Cold-gas specific impulse [s]
+g0 = 9.80665;                            % Standard sea-level gravity [m/s^2]
+thruster_min_pulse = 0.05;               % Minimum impulse bit duration [s]
 
 %% ========================================================================
 % 10. PRE-CALCULATIONS FOR VALIDATION OUTPUT
