@@ -44,7 +44,6 @@ q3 (qy, Pitch)           -0.7071         -0.6125          -0.6076 (+0.0050) -0.6
 q4 (qz, Yaw)              0.0000         -0.1263          -0.1273 (-0.0010) -0.1076 (+0.0187) -0.3538 (-0.2275)
 --------------------------------------------------------------------------------------------------------------
 Max Component Error       --              0.0000           0.0062 (on q2)    0.0578 (on q2)    0.2275 (on q4)
-3D Error Norm |dq|        --              0.0000           0.0093 (< 0.01)   0.0618            0.2831 (Failed)
 Equiv. Angular Error      --              0.00 deg         1.07 deg          7.23 deg          32.61 deg (~33 deg)
 
 
@@ -83,10 +82,10 @@ Suitability for Agile Slew      Optimal (Baseline Choice)        Moderate (Coars
 
 3. ENGINEERING INTERPRETATION AND CONCLUSIONS
 --------------------------------------------------------------------------------
-The high-fidelity simulation results validate the classic subsystem sizing rules adopted in industrial AOCS/GNC design:
+Based on the simulation results, the actuator trade-off validates the standard subsystem sizing principles adopted in industrial AOCS/GNC design:
 
-1. Reaction Wheels are the primary baseline for agile, three-axis precision pointing (|dq| = 0.0093 < 0.01, equivalent to 1.07 deg steady-state error under uncompensated gyro bias and sensor noise), providing continuous control authority with a ~10x single-axis torque margin at a fraction of a Watt. While unmodeled rotor momentum accumulation is negligible over a single 600-s slew, multi-orbit operations against secular SRP and drag torques require pairing the wheels with secondary actuators for momentum dumping.
+1. Reaction Wheels (RW) represent the optimal baseline for agile, three-axis precision slew maneuvers, providing continuous torque modulation and smooth fine-pointing performance. However, because they operate as internal momentum-exchange devices, secular environmental disturbances (such as aerodynamic drag and solar radiation pressure) lead to progressive angular momentum accumulation over multi-orbit missions. Consequently, RWs must be paired with external-torque actuators—typically Magnetorquers in LEO or Thrusters in higher orbits for periodic momentum unloading (desaturation).
 
-2. Cold Gas Thrusters provide high instantaneous torque capable of matching RW slew times, making them effective for rapid slews, orbital maneuvers, or safe-mode recovery. However, coupling a Bang-Bang thruster law with noisy navigation sensors (Star Tracker noise and Gyro bias) triggers sustained Roll-axis limit cycling, depleting onboard propellant after the maneuver is over and leaving a static deadband pointing offset (7.23 deg).
+2. Cold Gas Thrusters (THR) deliver high instantaneous control authority, making them well-suited for rapid reorientation, orbital maneuvers, or safe-mode recovery. However, when driven by a discrete Bang-Bang control law in the presence of navigation sensor noise and uncompensated gyroscope bias, they are prone to persistent limit cycling during the fine-pointing phase. This leads to degraded steady-state accuracy and ongoing propellant depletion, requiring pulse-modulation schemes (e.g., PWPF) or state estimation for efficient operation.
 
-3. Magnetorquers fail the rapid slew due to an ~8x torque deficit and instantaneous magnetic underactuation (tau = m x B), leaving the spacecraft 32.61 deg off-target despite full 22.5 W coil saturation. While geomagnetic field rotation along the orbit restores three-axis controllability over multi-orbit timescales, MTQs cannot execute fast slews and are best paired with Reaction Wheels for momentum unloading and B-dot detumbling.
+3. Magnetorquers (MTQ) are unsuitable for fast, time-constrained three-axis slews due to their inherently low torque authority and instantaneous magnetic underactuation (tau = m x B), which prevents torque generation parallel to the local geomagnetic field. While orbital motion rotates the geomagnetic field vector to restore three-axis controllability over multi-orbit timescales, MTQs are best utilized for low-bandwidth applications such as post-deployment B-dot detumbling and propellant-free Reaction Wheel desaturation.
